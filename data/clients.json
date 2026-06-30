@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "business": "dental",
+    "niche": "health",
+    "location": "local",
+    "status": "lead",
+    "notes": "",
+    "contact": "8978131256",
+    "lead_score": 50
+  }
+]

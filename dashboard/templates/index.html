@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Prospector - AI Agent System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #2a2a4a; }
+        .header h1 { font-size: 24px; color: #fff; }
+        .header span { color: #8888cc; font-size: 14px; }
+        .agents { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .card { background: #1a1a3e; border-radius: 12px; padding: 20px; border: 1px solid #2a2a4a; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); border-color: #6666aa; }
+        .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .card-header .emoji { font-size: 28px; }
+        .card-header h2 { font-size: 18px; color: #fff; }
+        .card-body { font-size: 14px; line-height: 1.6; }
+        .full-width { grid-column: 1 / -1; }
+
+        .prospect-card { background: #252550; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 3px solid #6666aa; }
+        .prospect-card .biz { color: #66ddaa; font-weight: 600; font-size: 15px; }
+        .prospect-card .meta { color: #8888cc; font-size: 12px; margin-top: 4px; }
+        .prospect-card .score { float: right; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .score.high { background: #1a4a2a; color: #66ddaa; }
+        .score.med { background: #4a4a1a; color: #cccc66; }
+        .score.low { background: #4a2a2a; color: #cc6666; }
+
+        .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .metric { text-align: center; padding: 12px; background: #252550; border-radius: 8px; }
+        .metric .value { font-size: 22px; font-weight: bold; color: #66ddaa; }
+        .metric .label { font-size: 11px; color: #8888cc; margin-top: 4px; }
+        .tip-item { padding: 8px 12px; background: #252550; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+        .tip-item::before { content: "→ "; color: #8888cc; }
+        .section-title { color: #cccc66; font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
+        .loading { text-align: center; padding: 40px; color: #8888cc; }
+        .refresh-btn { background: #2a2a4a; color: #e0e0e0; border: 1px solid #4a4a6a; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .refresh-btn:hover { background: #3a3a5a; }
+
+        .client-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .client-table th { text-align: left; color: #8888cc; font-size: 12px; padding: 8px 6px; border-bottom: 1px solid #2a2a4a; }
+        .client-table td { padding: 8px 6px; border-bottom: 1px solid #252550; font-size: 13px; vertical-align: middle; }
+        .client-table tr:hover td { background: #252550; }
+        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+        .status-badge.lead { background: #3a3a5a; color: #aaaadd; }
+        .status-badge.contacted { background: #4a4a1a; color: #cccc66; }
+        .status-badge.interested { background: #1a4a2a; color: #66ddaa; }
+        .status-badge.closed { background: #2a4a4a; color: #66dddd; }
+        .status-btn { padding: 3px 8px; border-radius: 4px; border: 1px solid #4a4a6a; background: #1a1a3e; color: #aaaadd; cursor: pointer; font-size: 11px; margin: 1px; }
+        .status-btn:hover { background: #3a3a5a; }
+        .status-btn.active { background: #4a6a4a; border-color: #66ddaa; color: #66ddaa; }
+        .delete-btn { background: none; border: none; color: #cc6666; cursor: pointer; font-size: 16px; }
+        .delete-btn:hover { color: #ff6666; }
+        .add-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .add-form input, .add-form select { background: #252550; border: 1px solid #4a4a6a; border-radius: 6px; padding: 8px 12px; color: #e0e0e0; font-size: 13px; flex: 1; min-width: 120px; }
+        .add-form input:focus, .add-form select:focus { outline: none; border-color: #6666aa; }
+        .add-form button { background: #4a6a4a; border: none; color: #88ddaa; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .add-form button:hover { background: #5a7a5a; }
+        .empty-state { text-align: center; padding: 30px; color: #8888cc; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🤖 Client Prospector AI</h1>
+            <span>Find, track & message clients for websites + AI agents</span>
+        </div>
+        <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+    </div>
+
+    <div class="agents" id="agents-container">
+        <div class="loading">Loading agents...</div>
+    </div>
+
+    <script>
+        async function loadAgents() {
+            try {
+                const [agentsRes, clientsRes, revRes] = await Promise.all([
+                    fetch('/api/agents'),
+                    fetch('/api/clients'),
+                    fetch('/api/revenue')
+                ]);
+                const data = await agentsRes.json();
+                const clients = await clientsRes.json();
+                const rev = await revRes.json();
+                renderDashboard(data, clients, rev);
+            } catch(e) {
+                document.getElementById('agents-container').innerHTML =
+                    `<div class="loading">⚠️ Error: ${e.message}</div>`;
+            }
+        }
+
+        function renderDashboard(data, clients, rev) {
+            const c = document.getElementById('agents-container');
+            c.innerHTML = '';
+
+            // === REVENUE TRACKER (full width) ===
+            c.innerHTML += `<div class="card full-width">
+                <div class="card-header"><span class="emoji">💰</span><h2>Revenue Tracker</h2></div>
+                <div class="card-body">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:15px">
+                        <div class="metric"><div class="value" style="color:#66dddd">₹${rev.today.toLocaleString()}</div><div class="label">Today</div></div>
+                        <div class="metric"><div class="value" style="color:#8888cc">₹${rev.yesterday.toLocaleString()}</div><div class="label">Yesterday</div></div>
+                        <div class="metric"><div class="value" style="color:#cccc66">₹${rev.this_week.toLocaleString()}</div><div class="label">This Week</div></div>
+                        <div class="metric"><div class="value" style="color:#66ddaa">₹${rev.this_month.toLocaleString()}</div><div class="label">This Month</div></div>
+                        <div class="metric"><div class="value" style="color:#fff">₹${rev.all_time.toLocaleString()}</div><div class="label">All Time</div></div>
+                    </div>
+                    <div class="add-form">
+                        <input type="text" id="revClient" placeholder="Client name" style="flex:1">
+                        <input type="number" id="revAmount" placeholder="Amount (₹)" style="flex:0.5">
+                        <input type="date" id="revDate" style="flex:0.4">
+                        <button onclick="addRevenue()">+ Add Revenue</button>
+                    </div>
+                    ${rev.entries.length === 0 ? '' : `
+                    <details>
+                        <summary style="cursor:pointer;color:#8888cc;font-size:13px">📜 History (${rev.entries.length} entries)</summary>
+                        <table class="client-table">
+                            <tr><th>Date</th><th>Client</th><th>Amount</th><th></th></tr>
+                            ${rev.entries.slice().reverse().map(e => `
+                                <tr><td style="color:#8888cc">${e.date}</td><td>${e.client}</td><td style="color:#66ddaa;font-weight:600">₹${e.amount.toLocaleString()}</td><td><button class="delete-btn" onclick="deleteRev(${e.id})">✕</button></td></tr>
+                            `).join('')}
+                        </table>
+                    </details>
+                    `}
+                </div>
+            </div>`;
+
+            // === CLIENT MANAGER (full width) ===
+            c.innerHTML += `<div class="card full-width">
+                <div class="card-header"><span class="emoji">📋</span><h2>Client Manager</h2></div>
+                <div class="card-body">
+                    <div class="add-form">
+                        <input type="text" id="newName" placeholder="Business name" />
+                        <input type="text" id="newNiche" placeholder="Niche" />
+                        <input type="text" id="newContact" placeholder="Contact (IG/phone)" />
+                        <button onclick="addClient()">+ Add</button>
+                    </div>
+                    <details style="margin-bottom:12px">
+                        <summary style="cursor:pointer;color:#8888cc;font-size:13px">📋 Bulk add (paste list)</summary>
+                        <textarea id="bulkInput" style="width:100%;background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:8px;color:#e0e0e0;font-size:13px;margin-top:8px;min-height:80px" placeholder="Paste one name per line...&#10;e.g.&#10;Shevvy Chin&#10;Nail Art Girl&#10;Local Bakery"></textarea>
+                        <div style="margin-top:6px;display:flex;gap:8px">
+                            <select id="bulkStatus" style="background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:6px 10px;color:#e0e0e0;font-size:13px">
+                                <option value="lead">📌 Lead</option>
+                                <option value="contacted" selected>📩 Contacted</option>
+                                <option value="interested">✅ Interested</option>
+                                <option value="closed">💰 Closed</option>
+                            </select>
+                            <button onclick="bulkAdd()" style="background:#3a3a5a;color:#ccc;border:1px solid #5a5a7a;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:13px">Add All</button>
+                        </div>
+                    </details>
+                    ${clients.length === 0 ? `<div class="empty-state">No clients yet. Add your first one above!</div>` : `
+                    <table class="client-table">
+                        <tr><th>Client</th><th>Niche</th><th>Status</th><th>Actions</th><th></th></tr>
+                        ${clients.map(c => {
+                            const stages = ['lead','contacted','interested','closed'];
+                            const stageLabels = {'lead':'📌 Lead','contacted':'📩 Contacted','interested':'✅ Interested','closed':'💰 Closed'};
+                            return `<tr>
+                                <td><strong>${c.business}</strong>${c.contact ? '<br><span style="color:#8888cc;font-size:11px">'+c.contact+'</span>' : ''}</td>
+                                <td><span style="color:#8888cc">${c.niche || '-'}</span></td>
+                                <td><span class="status-badge ${c.status}">${stageLabels[c.status] || c.status}</span></td>
+                                <td>${stages.map(s => `
+                                    <button class="status-btn ${s === c.status ? 'active' : ''}" onclick="updateStatus(${c.id},'${s}')">${s.slice(0,2)}</button>
+                                `).join('')}</td>
+                                <td><button class="delete-btn" onclick="deleteClient(${c.id})">✕</button></td>
+                            </tr>`;
+                        }).join('')}
+                    </table>
+                    `}
+                </div>
+            </div>`;
+
+            // === Pipeline Tracker ===
+            const pl = data.pipeline.data;
+            c.innerHTML += `<div class="card">
+                <div class="card-header"><span class="emoji">${data.pipeline.emoji}</span><h2>${data.pipeline.name}</h2></div>
+                <div class="card-body">
+                    <div class="metric-grid">
+                        <div class="metric"><div class="value">${pl.leads}</div><div class="label">Leads</div></div>
+                        <div class="metric"><div class="value">${pl.contacted}</div><div class="label">Contacted</div></div>
+                        <div class="metric"><div class="value">${pl.interested}</div><div class="label">Interested</div></div>
+                        <div class="metric"><div class="value">${pl.closed}</div><div class="label">Closed</div></div>
+                    </div>
+                    <div class="metric-grid" style="margin-top:12px;grid-template-columns:1fr 1fr">
+                        <div class="metric"><div class="value" style="font-size:16px">${pl.revenue_potential}</div><div class="label">Revenue Potential</div></div>
+                        <div class="metric"><div class="value">${pl.conversion_rate}</div><div class="label">Conversion Rate</div></div>
+                    </div>
+                </div>
+            </div>`;
+
+            // === Prospect Finder ===
+            c.innerHTML += `<div class="card">
+                <div class="card-header"><span class="emoji">${data.prospector.emoji}</span><h2>${data.prospector.name}</h2></div>
+                <div class="card-body">
+                    ${data.prospector.data.map(p => {
+                        let sc = p.lead_score >= 70 ? 'high' : p.lead_score >= 50 ? 'med' : 'low';
+                        return `<div class="prospect-card">
+                            <span class="score ${sc}">${p.lead_score}%</span>
+                            <div class="biz">${p.business}</div>
+                            <div class="meta">${p.niche} · ${p.location} · ${p.reason}</div>
+                            <div class="meta">📩 ${p.contact} ${p.notes ? '· 📝 '+p.notes : ''}</div>
+                            <div style="margin-top:8px">
+                                <button onclick="toggleMessages(${p.id})" style="background:#3a3a5a;color:#ccc;border:1px solid #5a5a7a;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px">✍️ Show Messages</button>
+                                <div id="msgs-${p.id}" style="display:none;margin-top:8px">
+                                    ${p.messages.slice(0,3).map((m, i) => `
+                                        <div style="background:#1a1a2e;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px;border:1px solid #3a3a5a;display:flex;justify-content:space-between;align-items:flex-start">
+                                            <span style="flex:1;margin-right:8px">${m}</span>
+                                            <button onclick="copyMsg(this)" style="background:#4a6a4a;color:#88ddaa;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;white-space:nowrap" data-msg="${m.replace(/"/g,'&quot;')}">📋 Copy</button>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+
+            // === Outreach Manager ===
+            const om = data.outreach.data;
+            c.innerHTML += `<div class="card">
+                <div class="card-header"><span class="emoji">${data.outreach.emoji}</span><h2>${data.outreach.name}</h2></div>
+                <div class="card-body">
+                    <div class="section-title">📱 Best Platforms</div>
+                    ${om.best_platforms.map(p => `<div class="tip-item">${p}</div>`).join('')}
+                    <div class="section-title">⏰ Timing</div>
+                    ${om.timing.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">💡 Pitch Tips</div>
+                    ${om.pitch_tips.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                </div>
+            </div>`;
+
+            // === Website Builder ===
+            const wi = data.builder.data;
+            c.innerHTML += `<div class="card">
+                <div class="card-header"><span class="emoji">${data.builder.emoji}</span><h2>${data.builder.name}</h2></div>
+                <div class="card-body">
+                    <div class="section-title">🆓 Free Tools</div>
+                    ${wi.free_tools.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">💰 What to Charge</div>
+                    ${wi.what_to_offer.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">⚙️ Tech Stack</div>
+                    ${wi.stack.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                </div>
+            </div>`;
+        }
+
+        async function addRevenue() {
+            const client = document.getElementById('revClient').value.trim();
+            const amount = document.getElementById('revAmount').value;
+            const date = document.getElementById('revDate').value || new Date().toISOString().split('T')[0];
+            if (!client || !amount) return;
+            await fetch('/api/revenue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ client, amount: parseInt(amount), date })
+            });
+            document.getElementById('revClient').value = '';
+            document.getElementById('revAmount').value = '';
+            location.reload();
+        }
+        async function deleteRev(id) {
+            if (!confirm('Delete this entry?')) return;
+            await fetch('/api/revenue/' + id, { method: 'DELETE' });
+            location.reload();
+        }
+
+        async function bulkAdd() {
+            const text = document.getElementById('bulkInput').value.trim();
+            if (!text) return;
+            const status = document.getElementById('bulkStatus').value;
+            const names = text.split('\n').map(n => n.trim()).filter(n => n);
+            for (const name of names) {
+                await fetch('/api/clients', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ business: name, status })
+                });
+            }
+            document.getElementById('bulkInput').value = '';
+            location.reload();
+        }
+
+        async function addClient() {
+            const name = document.getElementById('newName').value.trim();
+            if (!name) return;
+            await fetch('/api/clients', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    business: name,
+                    niche: document.getElementById('newNiche').value.trim(),
+                    contact: document.getElementById('newContact').value.trim()
+                })
+            });
+            document.getElementById('newName').value = '';
+            document.getElementById('newNiche').value = '';
+            document.getElementById('newContact').value = '';
+            location.reload();
+        }
+
+        async function updateStatus(id, status) {
+            await fetch(`/api/clients/${id}/status`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status})
+            });
+            location.reload();
+        }
+
+        async function deleteClient(id) {
+            if (!confirm('Delete this client?')) return;
+            await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+            location.reload();
+        }
+
+        function toggleMessages(id) {
+            const el = document.getElementById('msgs-' + id);
+            if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function copyMsg(btn) {
+            const msg = btn.getAttribute('data-msg');
+            navigator.clipboard.writeText(msg).then(() => {
+                btn.textContent = '✅ Copied';
+                setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+            });
+        }
+
+        loadAgents();
+    </script>
+</body>
+</html>
