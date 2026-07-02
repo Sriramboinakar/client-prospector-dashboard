@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client Prospector - AI Agent System</title>
+    <title>Client Prospector Pro — AI Agent System</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -12,172 +12,218 @@
             color: #e0e0e0;
             padding: 20px;
         }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #2a2a4a; }
-        .header h1 { font-size: 24px; color: #fff; }
-        .header span { color: #8888cc; font-size: 14px; }
-        .agents { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .card { background: #1a1a3e; border-radius: 12px; padding: 20px; border: 1px solid #2a2a4a; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); border-color: #6666aa; }
-        .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-        .card-header .emoji { font-size: 28px; }
-        .card-header h2 { font-size: 18px; color: #fff; }
-        .card-body { font-size: 14px; line-height: 1.6; }
-        .full-width { grid-column: 1 / -1; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid #2a2a4a; flex-wrap:wrap; gap:10px; }
+        .header h1 { font-size:22px; color:#fff; }
+        .header span { color:#8888cc; font-size:13px; }
+        .top-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:20px; }
+        .stat-card { background:#1a1a3e; border:1px solid #2a2a4a; border-radius:10px; padding:14px; text-align:center; }
+        .stat-card .val { font-size:22px; font-weight:700; }
+        .stat-card .lbl { font-size:11px; color:#8888cc; margin-top:3px; }
+        .agents { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:16px; }
+        .card { background:#1a1a3e; border-radius:12px; padding:20px; border:1px solid #2a2a4a; transition:transform 0.15s; }
+        .card:hover { border-color:#6666aa; }
+        .card-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+        .card-header .emoji { font-size:26px; }
+        .card-header h2 { font-size:17px; color:#fff; }
+        .card-body { font-size:14px; line-height:1.6; }
+        .full-width { grid-column:1/-1; }
 
-        .prospect-card { background: #252550; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 3px solid #6666aa; }
-        .prospect-card .biz { color: #66ddaa; font-weight: 600; font-size: 15px; }
-        .prospect-card .meta { color: #8888cc; font-size: 12px; margin-top: 4px; }
-        .prospect-card .score { float: right; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; }
-        .score.high { background: #1a4a2a; color: #66ddaa; }
-        .score.med { background: #4a4a1a; color: #cccc66; }
-        .score.low { background: #4a2a2a; color: #cc6666; }
+        .prospect-card { background:#252550; border-radius:8px; padding:12px; margin-bottom:8px; border-left:3px solid #6666aa; }
+        .prospect-card .biz { color:#66ddaa; font-weight:600; font-size:15px; }
+        .prospect-card .meta { color:#8888cc; font-size:12px; margin-top:3px; }
+        .prospect-card .score { float:right; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:600; }
+        .score.high { background:#1a4a2a; color:#66ddaa; }
+        .score.med { background:#4a4a1a; color:#cccc66; }
+        .score.low { background:#4a2a2a; color:#cc6666; }
 
-        .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .metric { text-align: center; padding: 12px; background: #252550; border-radius: 8px; }
-        .metric .value { font-size: 22px; font-weight: bold; color: #66ddaa; }
-        .metric .label { font-size: 11px; color: #8888cc; margin-top: 4px; }
-        .tip-item { padding: 8px 12px; background: #252550; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
-        .tip-item::before { content: "→ "; color: #8888cc; }
-        .section-title { color: #cccc66; font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
-        .loading { text-align: center; padding: 40px; color: #8888cc; }
-        .refresh-btn { background: #2a2a4a; color: #e0e0e0; border: 1px solid #4a4a6a; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        .refresh-btn:hover { background: #3a3a5a; }
+        .metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .metric { text-align:center; padding:10px; background:#252550; border-radius:8px; }
+        .metric .value { font-size:20px; font-weight:bold; color:#66ddaa; }
+        .metric .label { font-size:11px; color:#8888cc; margin-top:3px; }
 
-        .client-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .client-table th { text-align: left; color: #8888cc; font-size: 12px; padding: 8px 6px; border-bottom: 1px solid #2a2a4a; }
-        .client-table td { padding: 8px 6px; border-bottom: 1px solid #252550; font-size: 13px; vertical-align: middle; }
-        .client-table tr:hover td { background: #252550; }
-        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; }
-        .status-badge.lead { background: #3a3a5a; color: #aaaadd; }
-        .status-badge.contacted { background: #4a4a1a; color: #cccc66; }
-        .status-badge.interested { background: #1a4a2a; color: #66ddaa; }
-        .status-badge.closed { background: #2a4a4a; color: #66dddd; }
-        .status-btn { padding: 3px 8px; border-radius: 4px; border: 1px solid #4a4a6a; background: #1a1a3e; color: #aaaadd; cursor: pointer; font-size: 11px; margin: 1px; }
-        .status-btn:hover { background: #3a3a5a; }
-        .status-btn.active { background: #4a6a4a; border-color: #66ddaa; color: #66ddaa; }
-        .delete-btn { background: none; border: none; color: #cc6666; cursor: pointer; font-size: 16px; }
-        .delete-btn:hover { color: #ff6666; }
-        .add-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-        .add-form input, .add-form select { background: #252550; border: 1px solid #4a4a6a; border-radius: 6px; padding: 8px 12px; color: #e0e0e0; font-size: 13px; flex: 1; min-width: 120px; }
-        .add-form input:focus, .add-form select:focus { outline: none; border-color: #6666aa; }
-        .add-form button { background: #4a6a4a; border: none; color: #88ddaa; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
-        .add-form button:hover { background: #5a7a5a; }
-        .empty-state { text-align: center; padding: 30px; color: #8888cc; }
+        .tip-item { padding:8px 12px; background:#252550; border-radius:8px; margin-bottom:5px; font-size:13px; }
+        .tip-item::before { content:"→ "; color:#8888cc; }
+        .section-title { color:#cccc66; font-size:13px; font-weight:600; margin:10px 0 5px; }
+        .loading { text-align:center; padding:40px; color:#8888cc; }
+        .refresh-btn { background:#2a2a4a; color:#e0e0e0; border:1px solid #4a4a6a; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
+        .refresh-btn:hover { background:#3a3a5a; }
+        .btn-sm { padding:4px 10px; border-radius:6px; border:1px solid #4a4a6a; background:#2a2a4a; color:#ccc; cursor:pointer; font-size:12px; }
+        .btn-sm:hover { background:#3a3a5a; }
+
+        .client-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+        .client-table th { text-align:left; color:#8888cc; font-size:11px; padding:6px 4px; border-bottom:1px solid #2a2a4a; }
+        .client-table td { padding:6px 4px; border-bottom:1px solid #252550; vertical-align:middle; }
+        .client-table tr:hover td { background:#252550; }
+        .status-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; }
+        .status-badge.lead { background:#3a3a5a; color:#aaaadd; }
+        .status-badge.contacted { background:#4a4a1a; color:#cccc66; }
+        .status-badge.interested { background:#1a4a2a; color:#66ddaa; }
+        .status-badge.closed { background:#2a4a4a; color:#66dddd; }
+        .status-btn { padding:2px 6px; border-radius:4px; border:1px solid #4a4a6a; background:#1a1a3e; color:#aaaadd; cursor:pointer; font-size:10px; margin:1px; }
+        .status-btn:hover { background:#3a3a5a; }
+        .status-btn.active { background:#4a6a4a; border-color:#66ddaa; color:#66ddaa; }
+
+        .add-form { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+        .add-form input,.add-form select,.add-form textarea { background:#252550; border:1px solid #4a4a6a; border-radius:6px; padding:7px 10px; color:#e0e0e0; font-size:13px; flex:1; min-width:100px; }
+        .add-form input:focus,.add-form select:focus,.add-form textarea:focus { outline:none; border-color:#6666aa; }
+        .add-form button { background:#4a6a4a; border:none; color:#88ddaa; padding:7px 14px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px; }
+        .add-form button:hover { background:#5a7a5a; }
+        .add-form button.blue { background:#3a5a7a; color:#88bbdd; }
+        .add-form button.blue:hover { background:#4a6a8a; }
+        .add-form button.orange { background:#7a5a3a; color:#ddbb88; }
+        .add-form button.orange:hover { background:#8a6a4a; }
+
+        .empty-state { text-align:center; padding:24px; color:#8888cc; font-size:13px; }
+        .edit-inline { background:#2a2a5a; border:1px solid #4a4a6a; border-radius:4px; padding:2px 6px; color:#e0e0e0; font-size:12px; width:100%; }
+        .tab-bar { display:flex; gap:4px; margin-bottom:12px; flex-wrap:wrap; }
+        .tab { padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; background:#2a2a4a; color:#8888cc; border:1px solid transparent; }
+        .tab.active { background:#3a3a5a; color:#fff; border-color:#6666aa; }
+        .tab:hover { border-color:#5555aa; }
+        .tag { display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:600; }
+        .tag.nail { background:#4a2a3a; color:#dd88aa; }
+
+        .todo-item { display:flex; align-items:center; gap:8px; padding:8px 10px; background:#252550; border-radius:6px; margin-bottom:4px; }
+        .todo-item.done { opacity:0.5; }
+        .todo-item .todo-text { flex:1; font-size:13px; cursor:pointer; }
+        .todo-item.done .todo-text { text-decoration:line-through; color:#8888cc; }
+        .todo-item .todo-del { cursor:pointer; color:#cc6666; font-size:16px; background:none; border:none; }
+
+        .log-item { padding:6px 8px; border-bottom:1px solid #252550; font-size:12px; display:flex; gap:8px; }
+        .log-item .lt { color:#8888cc; white-space:nowrap; }
+        .log-item .ld { flex:1; }
+        .log-item .la { color:#66aa66; font-weight:600; text-transform:uppercase; font-size:10px; }
+
+        table.compact td, table.compact th { padding:4px; font-size:12px; }
+
+        @media (max-width:600px) {
+            .agents { grid-template-columns:1fr; }
+            .top-stats { grid-template-columns:repeat(2,1fr); }
+            .header { flex-direction:column; align-items:flex-start; }
+            body { padding:12px; }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div>
-            <h1>🤖 Client Prospector AI</h1>
-            <span>Find, track & message clients for websites + AI agents</span>
+            <h1>Client Prospector Pro</h1>
+            <span>AI-powered lead gen, email campaigns &amp; business tracker</span>
         </div>
-        <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+        <div style="display:flex;gap:8px">
+            <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        </div>
+    </div>
+
+    <div class="top-stats" id="topStats">
+        <div class="stat-card"><div class="val" style="color:#66ddaa">--</div><div class="lbl">Total Clients</div></div>
+        <div class="stat-card"><div class="val" style="color:#cccc66">--</div><div class="lbl">Active Leads</div></div>
+        <div class="stat-card"><div class="val" style="color:#66dddd">--</div><div class="lbl">Contacted</div></div>
+        <div class="stat-card"><div class="val" style="color:#fff">--</div><div class="lbl">Closed</div></div>
+        <div class="stat-card"><div class="val" style="color:#cc6666">--</div><div class="lbl">Conversion</div></div>
+    </div>
+
+    <div class="tab-bar" id="mainTabs">
+        <div class="tab active" data-tab="dashboard">Dashboard</div>
+        <div class="tab" data-tab="clients">Clients</div>
+        <div class="tab" data-tab="campaigns">Email Campaigns</div>
+        <div class="tab" data-tab="nailart">Nail Art Hub</div>
+        <div class="tab" data-tab="todos">To-Do</div>
+        <div class="tab" data-tab="logs">Logs</div>
     </div>
 
     <div class="agents" id="agents-container">
-        <div class="loading">Loading agents...</div>
+        <div class="loading">Loading dashboard...</div>
     </div>
 
     <script>
-        async function loadAgents() {
+        let allClients = [];
+        let allRevenue = [];
+        let nailsData = { total: 0, unique_clients: 0, revenue_total: 0, services: {}, branches: {} };
+
+        document.getElementById('mainTabs').addEventListener('click', e => {
+            const tab = e.target.closest('.tab');
+            if (!tab) return;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderCurrentTab(tab.dataset.tab);
+        });
+
+        function renderCurrentTab(tab) {
+            const c = document.getElementById('agents-container');
+            if (tab === 'dashboard') renderDashboard(c);
+            else if (tab === 'clients') renderClientManager(c);
+            else if (tab === 'campaigns') renderCampaigns(c);
+            else if (tab === 'nailart') renderNailArt(c);
+            else if (tab === 'todos') renderTodos(c);
+            else if (tab === 'logs') renderLogs(c);
+        }
+
+        async function loadAll() {
             try {
-                const [agentsRes, clientsRes, revRes] = await Promise.all([
-                    fetch('/api/agents'),
-                    fetch('/api/clients'),
-                    fetch('/api/revenue')
+                const [statsRes, clientsRes, revRes, agentsRes, nailRes, campaignRes, todoRes, logRes] = await Promise.all([
+                    fetch('/api/stats'), fetch('/api/clients'), fetch('/api/revenue'),
+                    fetch('/api/agents'), fetch('/api/nailart'), fetch('/api/campaigns'),
+                    fetch('/api/todos'), fetch('/api/logs')
                 ]);
-                const data = await agentsRes.json();
-                const clients = await clientsRes.json();
-                const rev = await revRes.json();
-                renderDashboard(data, clients, rev);
+                const stats = await statsRes.json();
+                allClients = await clientsRes.json();
+                allRevenue = await revRes.json();
+                const agentData = await agentsRes.json();
+                nailsData = await nailRes.json();
+                const campaigns = await campaignRes.json();
+                const todos = await todoRes.json();
+                const logs = await logRes.json();
+
+                renderStats(stats);
+                const c = document.getElementById('agents-container');
+                renderDashboard(c, agentData);
+                window._agentData = agentData;
+                window._campaigns = campaigns;
+                window._todos = todos;
+                window._logs = logs;
             } catch(e) {
-                document.getElementById('agents-container').innerHTML =
-                    `<div class="loading">⚠️ Error: ${e.message}</div>`;
+                document.getElementById('agents-container').innerHTML = `<div class="loading">Error: ${e.message}</div>`;
             }
         }
 
-        function renderDashboard(data, clients, rev) {
-            const c = document.getElementById('agents-container');
-            c.innerHTML = '';
+        function renderStats(s) {
+            document.querySelector('.top-stats').innerHTML = `
+                <div class="stat-card"><div class="val" style="color:#66ddaa">${s.total_clients}</div><div class="lbl">Total Clients</div></div>
+                <div class="stat-card"><div class="val" style="color:#cccc66">${s.active_leads}</div><div class="lbl">Active Leads</div></div>
+                <div class="stat-card"><div class="val" style="color:#66dddd">${s.contacted}</div><div class="lbl">Contacted</div></div>
+                <div class="stat-card"><div class="val" style="color:#fff">${s.closed}</div><div class="lbl">Closed</div></div>
+                <div class="stat-card"><div class="val" style="color:#cc6666">${s.conversion}%</div><div class="lbl">Conversion</div></div>`;
+        }
 
-            // === REVENUE TRACKER (full width) ===
-            c.innerHTML += `<div class="card full-width">
+        function renderDashboard(c, data) {
+            if (!data) { c.innerHTML = '<div class="loading">Loading...</div>'; return; }
+            const pl = data.pipeline.data;
+            c.innerHTML = `
+            <div class="card full-width">
                 <div class="card-header"><span class="emoji">💰</span><h2>Revenue Tracker</h2></div>
                 <div class="card-body">
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:15px">
-                        <div class="metric"><div class="value" style="color:#66dddd">₹${rev.today.toLocaleString()}</div><div class="label">Today</div></div>
-                        <div class="metric"><div class="value" style="color:#8888cc">₹${rev.yesterday.toLocaleString()}</div><div class="label">Yesterday</div></div>
-                        <div class="metric"><div class="value" style="color:#cccc66">₹${rev.this_week.toLocaleString()}</div><div class="label">This Week</div></div>
-                        <div class="metric"><div class="value" style="color:#66ddaa">₹${rev.this_month.toLocaleString()}</div><div class="label">This Month</div></div>
-                        <div class="metric"><div class="value" style="color:#fff">₹${rev.all_time.toLocaleString()}</div><div class="label">All Time</div></div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px">
+                        <div class="metric"><div class="value" style="color:#66dddd">₹${allRevenue.today.toLocaleString()}</div><div class="label">Today</div></div>
+                        <div class="metric"><div class="value" style="color:#8888cc">₹${allRevenue.yesterday.toLocaleString()}</div><div class="label">Yesterday</div></div>
+                        <div class="metric"><div class="value" style="color:#cccc66">₹${allRevenue.this_week.toLocaleString()}</div><div class="label">This Week</div></div>
+                        <div class="metric"><div class="value" style="color:#66ddaa">₹${allRevenue.this_month.toLocaleString()}</div><div class="label">This Month</div></div>
+                        <div class="metric"><div class="value" style="color:#fff">₹${allRevenue.all_time.toLocaleString()}</div><div class="label">All Time</div></div>
                     </div>
                     <div class="add-form">
                         <input type="text" id="revClient" placeholder="Client name" style="flex:1">
-                        <input type="number" id="revAmount" placeholder="Amount (₹)" style="flex:0.5">
-                        <input type="date" id="revDate" style="flex:0.4">
-                        <button onclick="addRevenue()">+ Add Revenue</button>
+                        <input type="number" id="revAmount" placeholder="Amount" style="flex:0.4">
+                        <input type="date" id="revDate" style="flex:0.3">
+                        <button onclick="addRevenue()">+ Add</button>
                     </div>
-                    ${rev.entries.length === 0 ? '' : `
-                    <details>
-                        <summary style="cursor:pointer;color:#8888cc;font-size:13px">📜 History (${rev.entries.length} entries)</summary>
-                        <table class="client-table">
-                            <tr><th>Date</th><th>Client</th><th>Amount</th><th></th></tr>
-                            ${rev.entries.slice().reverse().map(e => `
-                                <tr><td style="color:#8888cc">${e.date}</td><td>${e.client}</td><td style="color:#66ddaa;font-weight:600">₹${e.amount.toLocaleString()}</td><td><button class="delete-btn" onclick="deleteRev(${e.id})">✕</button></td></tr>
-                            `).join('')}
-                        </table>
-                    </details>
-                    `}
+                    ${allRevenue.entries.length > 5 ? `<details><summary style="cursor:pointer;color:#8888cc;font-size:13px">History (${allRevenue.entries.length})</summary>` : ''}
+                    ${allRevenue.entries.length ? `<table class="client-table"><tr><th>Date</th><th>Client</th><th>Amount</th><th></th></tr>
+                        ${allRevenue.entries.slice().reverse().slice(0,10).map(e => `<tr><td style="color:#8888cc">${e.date}</td><td>${e.client}</td><td style="color:#66ddaa;font-weight:600">₹${e.amount.toLocaleString()}</td><td><button class="btn-sm" onclick="deleteRev(${e.id})" style="color:#cc6666;border-color:#4a2a2a">x</button></td></tr>`).join('')}
+                    </table>` : '<div class="empty-state">No revenue entries yet</div>'}
+                    ${allRevenue.entries.length > 5 ? '</details>' : ''}
                 </div>
-            </div>`;
+            </div>
 
-            // === CLIENT MANAGER (full width) ===
-            c.innerHTML += `<div class="card full-width">
-                <div class="card-header"><span class="emoji">📋</span><h2>Client Manager</h2></div>
-                <div class="card-body">
-                    <div class="add-form">
-                        <input type="text" id="newName" placeholder="Business name" />
-                        <input type="text" id="newNiche" placeholder="Niche" />
-                        <input type="text" id="newContact" placeholder="Contact (IG/phone)" />
-                        <button onclick="addClient()">+ Add</button>
-                    </div>
-                    <details style="margin-bottom:12px">
-                        <summary style="cursor:pointer;color:#8888cc;font-size:13px">📋 Bulk add (paste list)</summary>
-                        <textarea id="bulkInput" style="width:100%;background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:8px;color:#e0e0e0;font-size:13px;margin-top:8px;min-height:80px" placeholder="Paste one name per line...&#10;e.g.&#10;Shevvy Chin&#10;Nail Art Girl&#10;Local Bakery"></textarea>
-                        <div style="margin-top:6px;display:flex;gap:8px">
-                            <select id="bulkStatus" style="background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:6px 10px;color:#e0e0e0;font-size:13px">
-                                <option value="lead">📌 Lead</option>
-                                <option value="contacted" selected>📩 Contacted</option>
-                                <option value="interested">✅ Interested</option>
-                                <option value="closed">💰 Closed</option>
-                            </select>
-                            <button onclick="bulkAdd()" style="background:#3a3a5a;color:#ccc;border:1px solid #5a5a7a;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:13px">Add All</button>
-                        </div>
-                    </details>
-                    ${clients.length === 0 ? `<div class="empty-state">No clients yet. Add your first one above!</div>` : `
-                    <table class="client-table">
-                        <tr><th>Client</th><th>Niche</th><th>Status</th><th>Actions</th><th></th></tr>
-                        ${clients.map(c => {
-                            const stages = ['lead','contacted','interested','closed'];
-                            const stageLabels = {'lead':'📌 Lead','contacted':'📩 Contacted','interested':'✅ Interested','closed':'💰 Closed'};
-                            return `<tr>
-                                <td><strong>${c.business}</strong>${c.contact ? '<br><span style="color:#8888cc;font-size:11px">'+c.contact+'</span>' : ''}</td>
-                                <td><span style="color:#8888cc">${c.niche || '-'}</span></td>
-                                <td><span class="status-badge ${c.status}">${stageLabels[c.status] || c.status}</span></td>
-                                <td>${stages.map(s => `
-                                    <button class="status-btn ${s === c.status ? 'active' : ''}" onclick="updateStatus(${c.id},'${s}')">${s.slice(0,2)}</button>
-                                `).join('')}</td>
-                                <td><button class="delete-btn" onclick="deleteClient(${c.id})">✕</button></td>
-                            </tr>`;
-                        }).join('')}
-                    </table>
-                    `}
-                </div>
-            </div>`;
-
-            // === Pipeline Tracker ===
-            const pl = data.pipeline.data;
-            c.innerHTML += `<div class="card">
+            <div class="card">
                 <div class="card-header"><span class="emoji">${data.pipeline.emoji}</span><h2>${data.pipeline.name}</h2></div>
                 <div class="card-body">
                     <div class="metric-grid">
@@ -186,15 +232,14 @@
                         <div class="metric"><div class="value">${pl.interested}</div><div class="label">Interested</div></div>
                         <div class="metric"><div class="value">${pl.closed}</div><div class="label">Closed</div></div>
                     </div>
-                    <div class="metric-grid" style="margin-top:12px;grid-template-columns:1fr 1fr">
-                        <div class="metric"><div class="value" style="font-size:16px">${pl.revenue_potential}</div><div class="label">Revenue Potential</div></div>
-                        <div class="metric"><div class="value">${pl.conversion_rate}</div><div class="label">Conversion Rate</div></div>
+                    <div class="metric-grid" style="margin-top:10px;grid-template-columns:1fr 1fr">
+                        <div class="metric"><div class="value" style="font-size:15px">${pl.revenue_potential}</div><div class="label">Revenue Potential</div></div>
+                        <div class="metric"><div class="value">${pl.conversion_rate}</div><div class="label">Conversion</div></div>
                     </div>
                 </div>
-            </div>`;
+            </div>
 
-            // === Prospect Finder ===
-            c.innerHTML += `<div class="card">
+            <div class="card">
                 <div class="card-header"><span class="emoji">${data.prospector.emoji}</span><h2>${data.prospector.name}</h2></div>
                 <div class="card-body">
                     ${data.prospector.data.map(p => {
@@ -203,48 +248,260 @@
                             <span class="score ${sc}">${p.lead_score}%</span>
                             <div class="biz">${p.business}</div>
                             <div class="meta">${p.niche} · ${p.location} · ${p.reason}</div>
-                            <div class="meta">📩 ${p.contact} ${p.notes ? '· 📝 '+p.notes : ''}</div>
-                            <div style="margin-top:8px">
-                                <button onclick="toggleMessages(${p.id})" style="background:#3a3a5a;color:#ccc;border:1px solid #5a5a7a;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px">✍️ Show Messages</button>
-                                <div id="msgs-${p.id}" style="display:none;margin-top:8px">
+                            <div class="meta">${p.contact}${p.notes ? ' · '+p.notes : ''}</div>
+                            <div style="margin-top:6px">
+                                <button class="btn-sm" onclick="toggleMsgs(${p.id})">Show Messages</button>
+                                <div id="msgs-${p.id}" style="display:none;margin-top:6px">
                                     ${p.messages.slice(0,3).map((m, i) => `
-                                        <div style="background:#1a1a2e;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px;border:1px solid #3a3a5a;display:flex;justify-content:space-between;align-items:flex-start">
-                                            <span style="flex:1;margin-right:8px">${m}</span>
-                                            <button onclick="copyMsg(this)" style="background:#4a6a4a;color:#88ddaa;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;white-space:nowrap" data-msg="${m.replace(/"/g,'&quot;')}">📋 Copy</button>
-                                        </div>
-                                    `).join('')}
+                                        <div style="background:#1a1a2e;border-radius:6px;padding:6px 8px;margin-bottom:4px;font-size:12px;border:1px solid #3a3a5a;display:flex;justify-content:space-between;align-items:flex-start">
+                                            <span style="flex:1;margin-right:6px">${m}</span>
+                                            <button class="btn-sm" onclick="copyMsg(this)" style="background:#4a6a4a;color:#88ddaa;border:none" data-msg="${m.replace(/"/g,'&quot;')}">Copy</button>
+                                        </div>`).join('')}
                                 </div>
                             </div>
                         </div>`;
                     }).join('')}
                 </div>
-            </div>`;
+            </div>
 
-            // === Outreach Manager ===
-            const om = data.outreach.data;
-            c.innerHTML += `<div class="card">
+            <div class="card">
                 <div class="card-header"><span class="emoji">${data.outreach.emoji}</span><h2>${data.outreach.name}</h2></div>
                 <div class="card-body">
-                    <div class="section-title">📱 Best Platforms</div>
-                    ${om.best_platforms.map(p => `<div class="tip-item">${p}</div>`).join('')}
-                    <div class="section-title">⏰ Timing</div>
-                    ${om.timing.map(t => `<div class="tip-item">${t}</div>`).join('')}
-                    <div class="section-title">💡 Pitch Tips</div>
-                    ${om.pitch_tips.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">Platforms</div>
+                    ${data.outreach.data.best_platforms.map(p => `<div class="tip-item">${p}</div>`).join('')}
+                    <div class="section-title">Timing</div>
+                    ${data.outreach.data.timing.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">Pitch Tips</div>
+                    ${data.outreach.data.pitch_tips.map(t => `<div class="tip-item">${t}</div>`).join('')}
                 </div>
-            </div>`;
+            </div>
 
-            // === Website Builder ===
-            const wi = data.builder.data;
-            c.innerHTML += `<div class="card">
+            <div class="card">
                 <div class="card-header"><span class="emoji">${data.builder.emoji}</span><h2>${data.builder.name}</h2></div>
                 <div class="card-body">
-                    <div class="section-title">🆓 Free Tools</div>
-                    ${wi.free_tools.map(t => `<div class="tip-item">${t}</div>`).join('')}
-                    <div class="section-title">💰 What to Charge</div>
-                    ${wi.what_to_offer.map(t => `<div class="tip-item">${t}</div>`).join('')}
-                    <div class="section-title">⚙️ Tech Stack</div>
-                    ${wi.stack.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">Free Tools</div>
+                    ${data.builder.data.free_tools.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">What to Charge</div>
+                    ${data.builder.data.what_to_charge.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                    <div class="section-title">Tech Stack</div>
+                    ${data.builder.data.stack.map(t => `<div class="tip-item">${t}</div>`).join('')}
+                </div>
+            </div>`;
+        }
+
+        function renderClientManager(c) {
+            const stages = ['lead','contacted','interested','closed'];
+            const labels = {'lead':'Lead','contacted':'Contacted','interested':'Interested','closed':'Closed'};
+            c.innerHTML = `
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">+</span><h2>Add Client</h2></div>
+                <div class="card-body">
+                    <div class="add-form">
+                        <input type="text" id="newName" placeholder="Business name *">
+                        <input type="text" id="newNiche" placeholder="Niche">
+                        <input type="text" id="newContact" placeholder="Contact">
+                        <input type="email" id="newEmail" placeholder="Email">
+                        <input type="text" id="newPhone" placeholder="Phone">
+                        <button onclick="addClient()">+ Add</button>
+                    </div>
+                    <details>
+                        <summary style="cursor:pointer;color:#8888cc;font-size:13px">Bulk add</summary>
+                        <div style="margin-top:6px">
+                            <textarea id="bulkInput" style="width:100%;background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:8px;color:#e0e0e0;font-size:13px;min-height:60px" placeholder="One name per line..."></textarea>
+                            <div style="margin-top:4px;display:flex;gap:6px">
+                                <select id="bulkStatus" style="background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:6px;color:#e0e0e0;font-size:13px">
+                                    <option value="lead">Lead</option><option value="contacted" selected>Contacted</option>
+                                    <option value="interested">Interested</option><option value="closed">Closed</option>
+                                </select>
+                                <input type="text" id="bulkNiche" placeholder="Niche (all)" style="flex:1">
+                                <button class="btn-sm" onclick="bulkAdd()">Add All</button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">${allClients.length}</span><h2>All Clients (${allClients.length})</h2></div>
+                <div class="card-body">
+                    ${allClients.length === 0 ? '<div class="empty-state">No clients yet. Add above!</div>' : `
+                    <div style="overflow-x:auto">
+                    <table class="client-table">
+                        <tr><th>Business</th><th>Niche</th><th>Contact</th><th>Status</th><th>Score</th><th>Actions</th></tr>
+                        ${allClients.map(c => `
+                        <tr id="client-row-${c.id}">
+                            <td><strong>${c.business}</strong></td>
+                            <td style="color:#8888cc">${c.niche || '-'}</td>
+                            <td style="font-size:11px;color:#8888cc">${c.email || c.phone || c.contact || '-'}</td>
+                            <td><span class="status-badge ${c.status}">${labels[c.status] || c.status}</span></td>
+                            <td><span class="score ${c.lead_score >= 70 ? 'high' : c.lead_score >= 50 ? 'med' : 'low'}" style="float:none;display:inline-block">${c.lead_score}</span></td>
+                            <td>
+                                ${stages.map(s => `<button class="status-btn ${s === c.status ? 'active' : ''}" onclick="updateStatus(${c.id},'${s}')">${s[0].toUpperCase()}</button>`).join('')}
+                                <button class="btn-sm" onclick="editClient(${c.id})" style="margin-left:4px">Edit</button>
+                                <button class="btn-sm" onclick="deleteClient(${c.id})" style="color:#cc6666;border-color:#4a2a2a">x</button>
+                            </td>
+                        </tr>`).join('')}
+                    </table>
+                    </div>`}
+                </div>
+            </div>`;
+        }
+
+        function renderCampaigns(c) {
+            const camps = window._campaigns || [];
+            c.innerHTML = `
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">+</span><h2>Create Email Campaign</h2></div>
+                <div class="card-body">
+                    <div class="add-form">
+                        <input type="text" id="campName" placeholder="Campaign name *" style="flex:1">
+                        <input type="text" id="campSubject" placeholder="Email subject *" style="flex:1">
+                    </div>
+                    <div class="add-form">
+                        <select id="campTarget" style="flex:0.3">
+                            <option value="lead">Leads</option><option value="contacted">Contacted</option>
+                            <option value="interested">Interested</option><option value="all">All</option>
+                        </select>
+                        <button onclick="createCampaign()" class="blue">Create Campaign</button>
+                    </div>
+                    <textarea id="campBody" style="width:100%;background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:8px;color:#e0e0e0;font-size:13px;min-height:100px;margin-top:6px" placeholder="Email body HTML... Use {name} for client name, {business} for business name"></textarea>
+                    <div style="margin-top:6px;color:#8888cc;font-size:12px">Tip: Use {name} and {business} as placeholders</div>
+                </div>
+            </div>
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">${camps.length}</span><h2>Campaigns (${camps.length})</h2></div>
+                <div class="card-body">
+                    ${camps.length === 0 ? '<div class="empty-state">No campaigns yet</div>' : camps.map(camp => `
+                    <div style="background:#252550;border-radius:8px;padding:12px;margin-bottom:8px;border-left:3px solid ${camp.status === 'sent' ? '#66ddaa' : '#6666aa'}">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <strong style="color:#fff">${camp.name}</strong>
+                            <span class="status-badge ${camp.status === 'sent' ? 'interested' : 'lead'}">${camp.status}</span>
+                        </div>
+                        <div style="color:#8888cc;font-size:12px;margin-top:4px">Subject: ${camp.subject}</div>
+                        <div style="color:#8888cc;font-size:12px">Target: ${camp.target_status} · Sent: ${camp.sent}</div>
+                        ${camp.status === 'draft' ? `<button class="btn-sm" style="margin-top:6px;background:#4a6a4a" onclick="sendCampaign(${camp.id})">Send Now</button>` : ''}
+                    </div>`).join('')}
+                </div>
+            </div>
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">📤</span><h2>Quick Email</h2></div>
+                <div class="card-body">
+                    <div class="add-form">
+                        <input type="email" id="qEmail" placeholder="To email *" style="flex:1">
+                        <input type="text" id="qSubject" placeholder="Subject *" style="flex:1">
+                    </div>
+                    <textarea id="qBody" style="width:100%;background:#252550;border:1px solid #4a4a6a;border-radius:6px;padding:8px;color:#e0e0e0;font-size:13px;min-height:80px;margin-top:6px" placeholder="Email body..."></textarea>
+                    <button style="margin-top:6px;background:#4a6a4a;border:none;color:#88ddaa;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px" onclick="sendQuickEmail()">Send Email</button>
+                    <div id="qEmailResult" style="margin-top:6px;font-size:12px"></div>
+                </div>
+            </div>`;
+        }
+
+        function renderNailArt(c) {
+            c.innerHTML = `
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">💅</span><h2>Nail Art Hub — Client Data</h2></div>
+                <div class="card-body">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+                        <div class="metric"><div class="value" style="color:#dd88aa">${nailsData.total}</div><div class="label">Total Bookings</div></div>
+                        <div class="metric"><div class="value" style="color:#dd88aa">${nailsData.unique_clients}</div><div class="label">Unique Clients</div></div>
+                        <div class="metric"><div class="value" style="color:#dd88aa">₹${(nailsData.revenue_total || 0).toLocaleString()}</div><div class="label">Booking Revenue</div></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div style="background:#252550;border-radius:8px;padding:12px">
+                            <div class="section-title" style="margin-top:0">Services Booked</div>
+                            ${Object.keys(nailsData.services || {}).length === 0 ? '<div style="color:#8888cc;font-size:13px">No service data</div>' :
+                            Object.entries(nailsData.services).map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid #2a2a4a"><span>${k}</span><span style="color:#dd88aa;font-weight:600">${v}</span></div>`).join('')}
+                        </div>
+                        <div style="background:#252550;border-radius:8px;padding:12px">
+                            <div class="section-title" style="margin-top:0">Branch Distribution</div>
+                            ${Object.keys(nailsData.branches || {}).length === 0 ? '<div style="color:#8888cc;font-size:13px">No branch data</div>' :
+                            Object.entries(nailsData.branches).map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid #2a2a4a"><span>${k}</span><span style="color:#dd88aa;font-weight:600">${v}</span></div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">📥</span><h2>Import Nail Art Clients as Leads</h2></div>
+                <div class="card-body">
+                    <p style="color:#8888cc;font-size:13px;margin-bottom:8px">Convert Nail Art Hub booking clients into prospector leads to track and follow up.</p>
+                    <button class="btn-sm" style="background:#4a6a4a;padding:8px 16px;font-size:13px" onclick="importNailClients()">Import as Leads</button>
+                    <div id="importResult" style="margin-top:8px;font-size:13px"></div>
+                </div>
+            </div>`;
+        }
+
+        async function importNailClients() {
+            const r = document.getElementById('importResult');
+            r.innerHTML = 'Importing...';
+            try {
+                const res = await fetch('/api/nailart/bookings');
+                const bookings = await res.json();
+                const names = [...new Set(bookings.map(b => b.client_name).filter(n => n))];
+                const existing = new Set(allClients.map(c => c.business.toLowerCase()));
+                const newNames = names.filter(n => !existing.has(n.toLowerCase()));
+                if (newNames.length === 0) {
+                    r.innerHTML = 'All clients already imported!';
+                    return;
+                }
+                await fetch('/api/clients/bulk', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ names: newNames, status: 'lead', niche: 'beauty/nails' })
+                });
+                r.innerHTML = `Imported ${newNames.length} new leads! Reloading...`;
+                setTimeout(() => location.reload(), 1000);
+            } catch(e) {
+                r.innerHTML = `Error: ${e.message}`;
+            }
+        }
+
+        function renderTodos(c) {
+            const todos = window._todos || [];
+            c.innerHTML = `
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">+</span><h2>Add To-Do</h2></div>
+                <div class="card-body">
+                    <div class="add-form">
+                        <input type="text" id="todoText" placeholder="What needs to be done? *" style="flex:2">
+                        <select id="todoPriority" style="flex:0.3">
+                            <option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option>
+                        </select>
+                        <select id="todoCategory" style="flex:0.3">
+                            <option value="general">General</option><option value="prospecting">Prospecting</option>
+                            <option value="nailart">Nail Art Hub</option><option value="email">Email</option>
+                            <option value="dev">Dev</option>
+                        </select>
+                        <button onclick="addTodo()">+ Add</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">${todos.filter(t => !t.done).length}</span><h2>To-Do List</h2></div>
+                <div class="card-body">
+                    ${todos.length === 0 ? '<div class="empty-state">Nothing yet!</div>' : 
+                    todos.map(t => `<div class="todo-item ${t.done ? 'done' : ''}">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${t.id})">
+                        <span class="todo-text" onclick="toggleTodo(${t.id})">${t.text}</span>
+                        <span class="tag ${t.category}">${t.category}</span>
+                        <span style="font-size:11px;color:#8888cc">${t.priority}</span>
+                        <button class="todo-del" onclick="deleteTodo(${t.id})">x</button>
+                    </div>`).join('')}
+                </div>
+            </div>`;
+        }
+
+        function renderLogs(c) {
+            const logs = window._logs || [];
+            c.innerHTML = `
+            <div class="card full-width">
+                <div class="card-header"><span class="emoji">📋</span><h2>Activity Log (last 50)</h2></div>
+                <div class="card-body">
+                    ${logs.length === 0 ? '<div class="empty-state">No activity yet</div>' :
+                    logs.map(l => `<div class="log-item">
+                        <span class="lt">${new Date(l.timestamp).toLocaleString()}</span>
+                        <span class="la">${l.action}</span>
+                        <span class="ld">${l.detail}</span>
+                    </div>`).join('')}
                 </div>
             </div>`;
         }
@@ -259,29 +516,11 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ client, amount: parseInt(amount), date })
             });
-            document.getElementById('revClient').value = '';
-            document.getElementById('revAmount').value = '';
             location.reload();
         }
         async function deleteRev(id) {
-            if (!confirm('Delete this entry?')) return;
+            if (!confirm('Delete?')) return;
             await fetch('/api/revenue/' + id, { method: 'DELETE' });
-            location.reload();
-        }
-
-        async function bulkAdd() {
-            const text = document.getElementById('bulkInput').value.trim();
-            if (!text) return;
-            const status = document.getElementById('bulkStatus').value;
-            const names = text.split('\n').map(n => n.trim()).filter(n => n);
-            for (const name of names) {
-                await fetch('/api/clients', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ business: name, status })
-                });
-            }
-            document.getElementById('bulkInput').value = '';
             location.reload();
         }
 
@@ -294,17 +533,30 @@
                 body: JSON.stringify({
                     business: name,
                     niche: document.getElementById('newNiche').value.trim(),
-                    contact: document.getElementById('newContact').value.trim()
+                    contact: document.getElementById('newContact').value.trim(),
+                    email: document.getElementById('newEmail').value.trim(),
+                    phone: document.getElementById('newPhone').value.trim()
                 })
             });
-            document.getElementById('newName').value = '';
-            document.getElementById('newNiche').value = '';
-            document.getElementById('newContact').value = '';
+            location.reload();
+        }
+
+        async function bulkAdd() {
+            const text = document.getElementById('bulkInput').value.trim();
+            if (!text) return;
+            const names = text.split('\n').map(n => n.trim()).filter(n => n);
+            const status = document.getElementById('bulkStatus').value;
+            const niche = document.getElementById('bulkNiche').value.trim();
+            await fetch('/api/clients/bulk', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ names, status, niche })
+            });
             location.reload();
         }
 
         async function updateStatus(id, status) {
-            await fetch(`/api/clients/${id}/status`, {
+            await fetch('/api/clients/' + id + '/status', {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({status})
@@ -313,25 +565,113 @@
         }
 
         async function deleteClient(id) {
-            if (!confirm('Delete this client?')) return;
-            await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+            if (!confirm('Delete?')) return;
+            await fetch('/api/clients/' + id, { method: 'DELETE' });
             location.reload();
         }
 
-        function toggleMessages(id) {
+        function editClient(id) {
+            const row = document.getElementById('client-row-' + id);
+            if (!row) return;
+            const c = allClients.find(x => x.id === id);
+            if (!c) return;
+            const html = row.innerHTML;
+            row.innerHTML = `<td><input class="edit-inline" id="eb-${id}-name" value="${c.business}"></td>
+                <td><input class="edit-inline" id="eb-${id}-niche" value="${c.niche || ''}"></td>
+                <td><input class="edit-inline" id="eb-${id}-contact" value="${c.contact || ''}" style="width:100%"></td>
+                <td><span class="status-badge ${c.status}">${c.status}</span></td>
+                <td><input class="edit-inline" id="eb-${id}-score" value="${c.lead_score}" style="width:40px"></td>
+                <td><button class="btn-sm" style="background:#4a6a4a" onclick="saveEdit(${id})">Save</button>
+                    <button class="btn-sm" onclick="location.reload()">Cancel</button></td>`;
+        }
+
+        async function saveEdit(id) {
+            const data = {
+                business: document.getElementById('eb-' + id + '-name').value,
+                niche: document.getElementById('eb-' + id + '-niche').value,
+                contact: document.getElementById('eb-' + id + '-contact').value,
+                lead_score: parseInt(document.getElementById('eb-' + id + '-score').value) || 50
+            };
+            await fetch('/api/clients/' + id, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            location.reload();
+        }
+
+        function toggleMsgs(id) {
             const el = document.getElementById('msgs-' + id);
             if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
         }
-
         function copyMsg(btn) {
             const msg = btn.getAttribute('data-msg');
             navigator.clipboard.writeText(msg).then(() => {
-                btn.textContent = '✅ Copied';
-                setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
             });
         }
 
-        loadAgents();
+        async function createCampaign() {
+            const name = document.getElementById('campName').value.trim();
+            const subject = document.getElementById('campSubject').value.trim();
+            const body = document.getElementById('campBody').value.trim();
+            const target = document.getElementById('campTarget').value;
+            if (!name || !subject || !body) { alert('Fill name, subject and body'); return; }
+            await fetch('/api/campaigns', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, subject, body, target_status: target })
+            });
+            location.reload();
+        }
+
+        async function sendCampaign(id) {
+            if (!confirm('Send this campaign?')) return;
+            const r = await fetch('/api/campaigns/' + id + '/send', { method: 'POST' });
+            const result = await r.json();
+            alert(`Sent to ${result.sent || 0} clients`);
+            location.reload();
+        }
+
+        async function sendQuickEmail() {
+            const to = document.getElementById('qEmail').value.trim();
+            const subj = document.getElementById('qSubject').value.trim();
+            const body = document.getElementById('qBody').value.trim();
+            const r = document.getElementById('qEmailResult');
+            if (!to || !subj || !body) { r.innerHTML = 'Fill all fields'; return; }
+            r.innerHTML = 'Sending...';
+            const res = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ to, subject: subj, body })
+            });
+            const result = await res.json();
+            r.innerHTML = result.success ? 'Sent!' : `Error: ${result.error}`;
+        }
+
+        async function addTodo() {
+            const text = document.getElementById('todoText').value.trim();
+            if (!text) return;
+            const priority = document.getElementById('todoPriority').value;
+            const category = document.getElementById('todoCategory').value;
+            await fetch('/api/todos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ text, priority, category })
+            });
+            location.reload();
+        }
+        async function toggleTodo(id) {
+            await fetch('/api/todos/' + id, { method: 'PUT' });
+            location.reload();
+        }
+        async function deleteTodo(id) {
+            await fetch('/api/todos/' + id, { method: 'DELETE' });
+            location.reload();
+        }
+
+        loadAll();
     </script>
 </body>
 </html>
