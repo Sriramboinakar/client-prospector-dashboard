@@ -10,7 +10,7 @@ DATA_DIR = Path("/tmp/data") if ON_VERCEL else Path(__file__).parent.parent / "d
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 if ON_VERCEL:
     seed_dir = Path(__file__).parent.parent / "data"
-    for f in ["clients.json", "todos.json", "logs.json", "campaigns.json", "revenue.json"]:
+    for f in ["clients.json", "todos.json", "logs.json", "campaigns.json", "revenue.json", "my_profile.json"]:
         target = DATA_DIR / f
         if not target.exists() and (seed_dir / f).exists():
             import shutil
