@@ -7,132 +7,222 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0f23;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #0f0f23 50%, #0a0a1a 100%);
             color: #e0e0e0;
-            padding: 20px;
+            min-height: 100vh;
         }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid #2a2a4a; flex-wrap:wrap; gap:10px; }
-        .header h1 { font-size:22px; color:#fff; }
-        .header span { color:#8888cc; font-size:13px; }
+        /* ===== Layout ===== */
+        .app { display:flex; min-height:100vh; }
+        .sidebar {
+            width:200px; background:#12122a; border-right:1px solid #2a2a4a;
+            padding:20px 0; flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto;
+        }
+        .sidebar-logo {
+            padding:0 16px 20px; border-bottom:1px solid #2a2a4a; margin-bottom:8px;
+            font-size:15px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;
+        }
+        .sidebar-logo .icon { width:28px; height:28px; background:linear-gradient(135deg,#6666aa,#8888cc); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+        .sidebar-item {
+            display:flex; align-items:center; gap:10px; padding:10px 16px; cursor:pointer;
+            font-size:13px; color:#8888cc; transition:0.15s; border-left:3px solid transparent;
+        }
+        .sidebar-item:hover { background:#1a1a3a; color:#ccc; }
+        .sidebar-item.active { background:#1a1a3e; color:#fff; border-left-color:#8888cc; }
+        .sidebar-item .si-icon { width:20px; text-align:center; font-size:14px; }
+        .main { flex:1; padding:24px 28px; max-width:1200px; }
+        /* ===== Header ===== */
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        .header h1 { font-size:20px; color:#fff; font-weight:600; }
+        .header .sub { color:#6666aa; font-size:12px; margin-top:2px; }
+        .header-actions { display:flex; gap:8px; align-items:center; }
+        .header-date { font-size:12px; color:#5555aa; background:#1a1a3e; border:1px solid #2a2a4a; border-radius:6px; padding:6px 12px; }
+        /* ===== Stats ===== */
         .top-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin-bottom:20px; }
-        .stat-card { background:#1a1a3e; border:1px solid #2a2a4a; border-radius:10px; padding:14px; text-align:center; }
+        .stat-card {
+            background:linear-gradient(135deg,#1a1a3e,#15153a); border:1px solid #2a2a4a;
+            border-radius:10px; padding:14px; text-align:center; transition:0.2s;
+        }
+        .stat-card:hover { border-color:#5555aa; transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
         .stat-card .val { font-size:22px; font-weight:700; }
-        .stat-card .lbl { font-size:11px; color:#8888cc; margin-top:3px; }
-        .agents { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:16px; }
-        .card { background:#1a1a3e; border-radius:12px; padding:20px; border:1px solid #2a2a4a; transition:transform 0.15s; }
-        .card:hover { border-color:#6666aa; }
-        .card-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-        .card-header .emoji { font-size:26px; }
-        .card-header h2 { font-size:17px; color:#fff; }
-        .card-body { font-size:14px; line-height:1.6; }
+        .stat-card .lbl { font-size:11px; color:#6666aa; margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; }
+        /* ===== Grid ===== */
+        .agents { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:14px; }
+        .card {
+            background:linear-gradient(135deg,#1a1a3e,#15153a); border-radius:10px; padding:18px 20px;
+            border:1px solid #2a2a4a; transition:0.2s;
+        }
+        .card:hover { border-color:#5555aa; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+        .card-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+        .card-header .emoji { font-size:22px; width:32px; text-align:center; }
+        .card-header h2 { font-size:15px; color:#fff; font-weight:600; }
+        .card-body { font-size:13px; line-height:1.6; }
         .full-width { grid-column:1/-1; }
-
-        .prospect-card { background:#252550; border-radius:8px; padding:12px; margin-bottom:8px; border-left:3px solid #6666aa; }
-        .prospect-card .biz { color:#66ddaa; font-weight:600; font-size:15px; }
-        .prospect-card .meta { color:#8888cc; font-size:12px; margin-top:3px; }
-        .prospect-card .score { float:right; padding:2px 8px; border-radius:8px; font-size:12px; font-weight:600; }
+        /* ===== Prospect Cards ===== */
+        .prospect-card { background:#20204a; border-radius:8px; padding:10px 12px; margin-bottom:6px; border-left:3px solid #5555aa; }
+        .prospect-card .biz { color:#66ddaa; font-weight:600; font-size:14px; }
+        .prospect-card .meta { color:#7777aa; font-size:11px; margin-top:2px; }
+        .prospect-card .score { float:right; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; }
         .score.high { background:#1a4a2a; color:#66ddaa; }
         .score.med { background:#4a4a1a; color:#cccc66; }
         .score.low { background:#4a2a2a; color:#cc6666; }
-
-        .metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-        .metric { text-align:center; padding:10px; background:#252550; border-radius:8px; }
-        .metric .value { font-size:20px; font-weight:bold; color:#66ddaa; }
-        .metric .label { font-size:11px; color:#8888cc; margin-top:3px; }
-
-        .tip-item { padding:8px 12px; background:#252550; border-radius:8px; margin-bottom:5px; font-size:13px; }
-        .tip-item::before { content:"→ "; color:#8888cc; }
-        .section-title { color:#cccc66; font-size:13px; font-weight:600; margin:10px 0 5px; }
-        .loading { text-align:center; padding:40px; color:#8888cc; }
-        .refresh-btn { background:#2a2a4a; color:#e0e0e0; border:1px solid #4a4a6a; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; }
-        .refresh-btn:hover { background:#3a3a5a; }
-        .btn-sm { padding:4px 10px; border-radius:6px; border:1px solid #4a4a6a; background:#2a2a4a; color:#ccc; cursor:pointer; font-size:12px; }
+        /* ===== Metrics ===== */
+        .metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .metric { text-align:center; padding:10px; background:#20204a; border-radius:8px; }
+        .metric .value { font-size:18px; font-weight:700; color:#66ddaa; }
+        .metric .label { font-size:11px; color:#6666aa; margin-top:2px; }
+        /* ===== Tips ===== */
+        .tip-item { padding:6px 10px; background:#20204a; border-radius:6px; margin-bottom:4px; font-size:12px; }
+        .tip-item::before { content:"→ "; color:#6666aa; }
+        .section-title { color:#aa8844; font-size:12px; font-weight:600; margin:8px 0 4px; text-transform:uppercase; letter-spacing:0.5px; }
+        .loading { text-align:center; padding:40px; color:#6666aa; font-size:14px; }
+        .loading::after { content:'...'; animation:dots 1.5s infinite; }
+        @keyframes dots { 0%,20% { opacity:0; } 50% { opacity:1; } 100% { opacity:0; } }
+        /* ===== Buttons ===== */
+        .refresh-btn { background:#2a2a4a; color:#ccc; border:1px solid #4a4a6a; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; transition:0.15s; }
+        .refresh-btn:hover { background:#3a3a5a; border-color:#6666aa; }
+        .btn-sm { padding:3px 8px; border-radius:5px; border:1px solid #4a4a6a; background:#2a2a4a; color:#aaa; cursor:pointer; font-size:11px; transition:0.15s; }
         .btn-sm:hover { background:#3a3a5a; }
-
-        .client-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
-        .client-table th { text-align:left; color:#8888cc; font-size:11px; padding:6px 4px; border-bottom:1px solid #2a2a4a; }
-        .client-table td { padding:6px 4px; border-bottom:1px solid #252550; vertical-align:middle; }
-        .client-table tr:hover td { background:#252550; }
-        .status-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; }
-        .status-badge.lead { background:#3a3a5a; color:#aaaadd; }
+        /* ===== Client Table ===== */
+        .client-table { width:100%; border-collapse:collapse; margin-top:6px; font-size:12px; }
+        .client-table th { text-align:left; color:#6666aa; font-size:10px; padding:5px 4px; border-bottom:1px solid #2a2a4a; text-transform:uppercase; letter-spacing:0.3px; }
+        .client-table td { padding:5px 4px; border-bottom:1px solid #1e1e3e; vertical-align:middle; }
+        .client-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+        .client-table tr:hover td { background:#20204a; }
+        .client-table tr { transition:0.1s; }
+        /* ===== Status ===== */
+        .status-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; }
+        .status-badge.lead { background:#2a2a5a; color:#8888cc; }
         .status-badge.contacted { background:#4a4a1a; color:#cccc66; }
         .status-badge.interested { background:#1a4a2a; color:#66ddaa; }
         .status-badge.closed { background:#2a4a4a; color:#66dddd; }
-        .status-btn { padding:2px 6px; border-radius:4px; border:1px solid #4a4a6a; background:#1a1a3e; color:#aaaadd; cursor:pointer; font-size:10px; margin:1px; }
+        .status-btn { padding:2px 5px; border-radius:3px; border:1px solid #3a3a5a; background:#1a1a3e; color:#8888cc; cursor:pointer; font-size:9px; margin:1px; transition:0.1s; }
         .status-btn:hover { background:#3a3a5a; }
-        .status-btn.active { background:#4a6a4a; border-color:#66ddaa; color:#66ddaa; }
-
-        .add-form { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-        .add-form input,.add-form select,.add-form textarea { background:#252550; border:1px solid #4a4a6a; border-radius:6px; padding:7px 10px; color:#e0e0e0; font-size:13px; flex:1; min-width:100px; }
-        .add-form input:focus,.add-form select:focus,.add-form textarea:focus { outline:none; border-color:#6666aa; }
-        .add-form button { background:#4a6a4a; border:none; color:#88ddaa; padding:7px 14px; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px; }
-        .add-form button:hover { background:#5a7a5a; }
+        .status-btn.active { background:#3a6a3a; border-color:#66ddaa; color:#66ddaa; }
+        /* ===== Forms ===== */
+        .add-form { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+        .add-form input,.add-form select,.add-form textarea { background:#20204a; border:1px solid #3a3a5a; border-radius:6px; padding:6px 10px; color:#e0e0e0; font-size:12px; flex:1; min-width:80px; transition:0.15s; }
+        .add-form input:focus,.add-form select:focus,.add-form textarea:focus { outline:none; border-color:#6666aa; box-shadow:0 0 0 2px rgba(100,100,170,0.15); }
+        .add-form button { background:#3a6a3a; border:none; color:#88ddaa; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; font-size:12px; transition:0.15s; }
+        .add-form button:hover { background:#4a7a4a; }
         .add-form button.blue { background:#3a5a7a; color:#88bbdd; }
         .add-form button.blue:hover { background:#4a6a8a; }
         .add-form button.orange { background:#7a5a3a; color:#ddbb88; }
         .add-form button.orange:hover { background:#8a6a4a; }
-
-        .empty-state { text-align:center; padding:24px; color:#8888cc; font-size:13px; }
-        .edit-inline { background:#2a2a5a; border:1px solid #4a4a6a; border-radius:4px; padding:2px 6px; color:#e0e0e0; font-size:12px; width:100%; }
+        .empty-state { text-align:center; padding:20px; color:#6666aa; font-size:13px; }
+        .edit-inline { background:#20205a; border:1px solid #4a4a6a; border-radius:4px; padding:2px 6px; color:#e0e0e0; font-size:12px; width:100%; }
+        /* ===== Tabs ===== */
         .tab-bar { display:flex; gap:4px; margin-bottom:12px; flex-wrap:wrap; }
-        .tab { padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; background:#2a2a4a; color:#8888cc; border:1px solid transparent; }
+        .tab { padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; background:#2a2a4a; color:#8888cc; border:1px solid transparent; transition:0.15s; }
         .tab.active { background:#3a3a5a; color:#fff; border-color:#6666aa; }
         .tab:hover { border-color:#5555aa; }
+        /* ===== Tags ===== */
         .tag { display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:600; }
         .tag.nail { background:#4a2a3a; color:#dd88aa; }
-
-        .todo-item { display:flex; align-items:center; gap:8px; padding:8px 10px; background:#252550; border-radius:6px; margin-bottom:4px; }
-        .todo-item.done { opacity:0.5; }
-        .todo-item .todo-text { flex:1; font-size:13px; cursor:pointer; }
-        .todo-item.done .todo-text { text-decoration:line-through; color:#8888cc; }
-        .todo-item .todo-del { cursor:pointer; color:#cc6666; font-size:16px; background:none; border:none; }
-
-        .log-item { padding:6px 8px; border-bottom:1px solid #252550; font-size:12px; display:flex; gap:8px; }
-        .log-item .lt { color:#8888cc; white-space:nowrap; }
+        .tag.prospecting { background:#2a3a4a; color:#88aadd; }
+        .tag.email { background:#2a4a3a; color:#88ddaa; }
+        .tag.dev { background:#3a3a4a; color:#ccc; }
+        .tag.general { background:#3a3a2a; color:#cccc88; }
+        /* ===== Todo ===== */
+        .todo-item { display:flex; align-items:center; gap:8px; padding:6px 10px; background:#20204a; border-radius:6px; margin-bottom:3px; transition:0.15s; }
+        .todo-item:hover { background:#252555; }
+        .todo-item.done { opacity:0.4; }
+        .todo-item .todo-text { flex:1; font-size:12px; cursor:pointer; }
+        .todo-item.done .todo-text { text-decoration:line-through; color:#6666aa; }
+        .todo-item .todo-del { cursor:pointer; color:#cc6666; font-size:14px; background:none; border:none; line-height:1; }
+        /* ===== Logs ===== */
+        .log-item { padding:4px 8px; border-bottom:1px solid #1e1e3e; font-size:11px; display:flex; gap:8px; }
+        .log-item .lt { color:#6666aa; white-space:nowrap; }
         .log-item .ld { flex:1; }
-        .log-item .la { color:#66aa66; font-weight:600; text-transform:uppercase; font-size:10px; }
+        .log-item .la { color:#66aa66; font-weight:600; text-transform:uppercase; font-size:9px; letter-spacing:0.3px; }
+        /* ===== Animations ===== */
+        .fade-in { animation:fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar { width:4px; height:4px; }
+        ::-webkit-scrollbar-track { background:#0a0a1a; }
+        ::-webkit-scrollbar-thumb { background:#3a3a5a; border-radius:4px; }
+        ::-webkit-scrollbar-thumb:hover { background:#5a5a8a; }
 
-        table.compact td, table.compact th { padding:4px; font-size:12px; }
-
-        @media (max-width:600px) {
+        .mobile-tab-bar { display:none; gap:4px; margin-bottom:12px; flex-wrap:wrap; }
+        .mtab { padding:6px 14px; border-radius:6px; cursor:pointer; font-size:14px; background:#2a2a4a; color:#8888cc; border:1px solid transparent; transition:0.15s; text-align:center; flex:1; }
+        .mtab.active { background:#3a3a5a; color:#fff; border-color:#6666aa; }
+        @media (max-width:768px) {
+            .sidebar { display:none; }
+            .mobile-tab-bar { display:flex; }
+            .main { padding:16px; }
             .agents { grid-template-columns:1fr; }
-            .top-stats { grid-template-columns:repeat(2,1fr); }
+            .top-stats { grid-template-columns:repeat(2,1fr); gap:8px; }
             .header { flex-direction:column; align-items:flex-start; }
-            body { padding:12px; }
+            .header-date { display:none; }
+        }
+        @media (max-width:480px) {
+            .main { padding:12px; }
+            .top-stats { grid-template-columns:repeat(2,1fr); gap:6px; }
+            .stat-card { padding:10px; }
+            .stat-card .val { font-size:18px; }
+            .card { padding:14px; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>Client Prospector Pro</h1>
-            <span>AI-powered lead gen, email campaigns &amp; business tracker</span>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <div class="icon">P</div>
+                Prospector Pro
+            </div>
+            <div class="sidebar-item active" data-tab="dashboard">
+                <span class="si-icon">&#9632;</span> Dashboard
+            </div>
+            <div class="sidebar-item" data-tab="clients">
+                <span class="si-icon">&#9679;</span> Clients
+            </div>
+            <div class="sidebar-item" data-tab="campaigns">
+                <span class="si-icon">&#9993;</span> Campaigns
+            </div>
+            <div class="sidebar-item" data-tab="nailart">
+                <span class="si-icon">&#9830;</span> Nail Art Hub
+            </div>
+            <div class="sidebar-item" data-tab="todos">
+                <span class="si-icon">&#9744;</span> To-Do
+            </div>
+            <div class="sidebar-item" data-tab="logs">
+                <span class="si-icon">&#9776;</span> Logs
+            </div>
         </div>
-        <div style="display:flex;gap:8px">
-            <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        <div class="main">
+            <div class="header">
+                <div>
+                    <h1>Client Prospector Pro</h1>
+                    <div class="sub">AI-powered lead gen, email campaigns &amp; business tracker</div>
+                </div>
+                <div class="header-actions">
+                    <span class="header-date" id="headerDate"></span>
+                    <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+                </div>
+            </div>
+
+            <div class="top-stats" id="topStats">
+                <div class="stat-card"><div class="val" style="color:#66ddaa">--</div><div class="lbl">Total Clients</div></div>
+                <div class="stat-card"><div class="val" style="color:#cccc66">--</div><div class="lbl">Active Leads</div></div>
+                <div class="stat-card"><div class="val" style="color:#66dddd">--</div><div class="lbl">Contacted</div></div>
+                <div class="stat-card"><div class="val" style="color:#fff">--</div><div class="lbl">Closed</div></div>
+                <div class="stat-card"><div class="val" style="color:#cc6666">--</div><div class="lbl">Conversion</div></div>
+            </div>
+
+            <div class="mobile-tab-bar" id="mobileTabs">
+                <div class="mtab active" data-tab="dashboard">&#9632;</div>
+                <div class="mtab" data-tab="clients">&#9679;</div>
+                <div class="mtab" data-tab="campaigns">&#9993;</div>
+                <div class="mtab" data-tab="nailart">&#9830;</div>
+                <div class="mtab" data-tab="todos">&#9744;</div>
+                <div class="mtab" data-tab="logs">&#9776;</div>
+            </div>
+            <div class="agents" id="agents-container">
+                <div class="loading">Loading dashboard</div>
+            </div>
         </div>
-    </div>
-
-    <div class="top-stats" id="topStats">
-        <div class="stat-card"><div class="val" style="color:#66ddaa">--</div><div class="lbl">Total Clients</div></div>
-        <div class="stat-card"><div class="val" style="color:#cccc66">--</div><div class="lbl">Active Leads</div></div>
-        <div class="stat-card"><div class="val" style="color:#66dddd">--</div><div class="lbl">Contacted</div></div>
-        <div class="stat-card"><div class="val" style="color:#fff">--</div><div class="lbl">Closed</div></div>
-        <div class="stat-card"><div class="val" style="color:#cc6666">--</div><div class="lbl">Conversion</div></div>
-    </div>
-
-    <div class="tab-bar" id="mainTabs">
-        <div class="tab active" data-tab="dashboard">Dashboard</div>
-        <div class="tab" data-tab="clients">Clients</div>
-        <div class="tab" data-tab="campaigns">Email Campaigns</div>
-        <div class="tab" data-tab="nailart">Nail Art Hub</div>
-        <div class="tab" data-tab="todos">To-Do</div>
-        <div class="tab" data-tab="logs">Logs</div>
-    </div>
-
-    <div class="agents" id="agents-container">
-        <div class="loading">Loading dashboard...</div>
     </div>
 
     <script>
@@ -140,13 +230,25 @@
         let allRevenue = [];
         let nailsData = { total: 0, unique_clients: 0, revenue_total: 0, services: {}, branches: {} };
 
-        document.getElementById('mainTabs').addEventListener('click', e => {
-            const tab = e.target.closest('.tab');
+        document.getElementById('mobileTabs').addEventListener('click', e => {
+            const tab = e.target.closest('.mtab');
             if (!tab) return;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.mtab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
+            document.querySelectorAll('.sidebar-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab.dataset.tab));
             renderCurrentTab(tab.dataset.tab);
         });
+
+        document.querySelector('.sidebar').addEventListener('click', e => {
+            const item = e.target.closest('.sidebar-item');
+            if (!item) return;
+            document.querySelectorAll('.sidebar-item').forEach(t => t.classList.remove('active'));
+            item.classList.add('active');
+            document.querySelectorAll('.mtab').forEach(t => t.classList.toggle('active', t.dataset.tab === item.dataset.tab));
+            renderCurrentTab(item.dataset.tab);
+        });
+
+        document.getElementById('headerDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
 
         function renderCurrentTab(tab) {
             const c = document.getElementById('agents-container');
@@ -176,6 +278,7 @@
 
                 renderStats(stats);
                 const c = document.getElementById('agents-container');
+                c.classList.add('fade-in');
                 renderDashboard(c, agentData);
                 window._agentData = agentData;
                 window._campaigns = campaigns;

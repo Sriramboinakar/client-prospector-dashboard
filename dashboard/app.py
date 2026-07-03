@@ -4,6 +4,16 @@ from pathlib import Path
 from datetime import datetime, date, timedelta
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+ON_VERCEL = os.environ.get("VERCEL") == "1"
+DATA_DIR = Path("/tmp/data") if ON_VERCEL else Path(__file__).parent.parent / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+import scripts.prospector as prospector_mod
+import scripts.email_sender as email_mod
+prospector_mod.DATA_DIR = DATA_DIR
+email_mod.DATA_DIR = DATA_DIR
+
 from scripts.prospector import (
     ProspectFinder, OutreachManager, PipelineTracker,
     WebsiteInspo, MessageGenerator, EmailCampaign,
@@ -12,8 +22,6 @@ from scripts.prospector import (
 from scripts.email_sender import send_email, send_campaign
 
 app = Flask(__name__)
-
-DATA_DIR = Path(__file__).parent.parent / "data"
 CLIENTS_FILE = DATA_DIR / "clients.json"
 REVENUE_FILE = DATA_DIR / "revenue.json"
 TODOS_FILE = DATA_DIR / "todos.json"
