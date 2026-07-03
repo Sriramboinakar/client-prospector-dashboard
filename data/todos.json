@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "text": "should add more pics in nail website",
+    "done": true,
+    "priority": "medium",
+    "category": "nailart",
+    "created": "2026-07-02T19:41:12.184566"
+  },
+  {
+    "id": 2,
+    "text": "add whatapp also in tht",
+    "done": true,
+    "priority": "medium",
+    "category": "nailart",
+    "created": "2026-07-02T19:41:29.996179"
+  },
+  {
+    "id": 3,
+    "text": "Discuss colors, fonts and content with Shevvy Chin for final design",
+    "done": false,
+    "priority": "high",
+    "category": "prospecting",
+    "created": "2026-07-03T10:00:00.000000"
+  },
+  {
+    "id": 4,
+    "text": "Get Razorpay keys from Ayesha and add to Vercel env vars",
+    "done": false,
+    "priority": "high",
+    "category": "nailart",
+    "created": "2026-07-03T10:00:00.000000"
+  },
+  {
+    "id": 5,
+    "text": "Get Makeup photo from Ayesha for website",
+    "done": false,
+    "priority": "medium",
+    "category": "nailart",
+    "created": "2026-07-03T10:00:00.000000"
+  },
+  {
+    "id": 6,
+    "text": "Send Shevvy Chin revised mockup with discussed colors/fonts after call",
+    "done": false,
+    "priority": "high",
+    "category": "prospecting",
+    "created": "2026-07-03T10:00:00.000000"
+  },
+  {
+    "id": 7,
+    "text": "Call with Shevvy Chin tomorrow - discuss colors, fonts, content, Razorpay integration, gallery photos",
+    "done": false,
+    "priority": "high",
+    "category": "prospecting",
+    "created": "2026-07-03T10:00:00.000000"
+  }
+]

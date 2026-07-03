@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "business": "Nail Art Hub",
+    "status": "closed",
+    "niche": "beauty/nails",
+    "location": "local",
+    "notes": "COMPLETED. Built full nail salon website for Ayesha Fatima at https://nairarthub-website.vercel.app. Features: 9 service cards with click-to-open lightbox, ₹99 flat booking fee, floating pill navbar, Google reviews carousel, gallery (22 images), nail course section, WhatsApp integration. Image replacements: GelX Extensions, Gel Extensions, Acrylic 3D Nail Art all updated with client-provided pics. No duplicate images. Razorpay payment integration added (keys pending from client). Hero text updated. Pending: Razorpay keys from client, Makeup photo from client.",
+    "contact": "Ayesha Fatima",
+    "lead_score": 100,
+    "email": "",
+    "phone": "",
+    "created": "2026-07-02T18:56:31.930850"
+  },
+  {
+    "id": 2,
+    "business": "Shevvy Chin (QiRising)",
+    "status": "interested",
+    "niche": "fitness/wellness",
+    "location": "Hyderabad",
+    "notes": "Pre/post natal fitness coach in Hyderabad. Demo at https://shevvy-chin.vercel.app. Liked the demo layout but wants to discuss colors, fonts, and content. Instagram: @xiao_wei_jin. Lnk.Bio: https://lnk.bio/QiRising. Services: Online Training (1x60, 6x60), Consultations (1x60, 3x60). Uses Razorpay already. Client: Xiao Wei Jin.",
+    "contact": "Xiao Wei Jin",
+    "lead_score": 70,
+    "email": "",
+    "phone": "9000164244",
+    "created": "2026-07-03T10:00:00.000000"
+  }
+]

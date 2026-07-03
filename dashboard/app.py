@@ -8,6 +8,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 ON_VERCEL = os.environ.get("VERCEL") == "1"
 DATA_DIR = Path("/tmp/data") if ON_VERCEL else Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+if ON_VERCEL:
+    seed_dir = Path(__file__).parent.parent / "data"
+    for f in ["clients.json", "todos.json", "logs.json", "campaigns.json", "revenue.json"]:
+        target = DATA_DIR / f
+        if not target.exists() and (seed_dir / f).exists():
+            import shutil
+            shutil.copy2(seed_dir / f, target)
 
 import scripts.prospector as prospector_mod
 import scripts.email_sender as email_mod

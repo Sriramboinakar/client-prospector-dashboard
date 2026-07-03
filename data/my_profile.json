@@ -1,0 +1,110 @@
+{
+  "username": "sriramm01",
+  "posts": [
+    {
+      "shortcode": "sample0",
+      "url": "https://instagram.com/p/sample0",
+      "caption": "Just dropped a new project! Check it out \ud83d\ude80",
+      "likes": 423,
+      "comments": 13,
+      "timestamp": "2025-001-01T12:00:00",
+      "media_type": "image",
+      "video_views": 4596
+    },
+    {
+      "shortcode": "sample1",
+      "url": "https://instagram.com/p/sample1",
+      "caption": "Morning grind \ud83d\udcaa never give up on your dreams",
+      "likes": 278,
+      "comments": 25,
+      "timestamp": "2025-002-01T12:00:00",
+      "media_type": "image",
+      "video_views": 175
+    },
+    {
+      "shortcode": "sample2",
+      "url": "https://instagram.com/p/sample2",
+      "caption": "Beautiful sunset today \ud83c\udf05 #nature #vibes",
+      "likes": 119,
+      "comments": 4,
+      "timestamp": "2025-003-01T12:00:00",
+      "media_type": "image",
+      "video_views": 4374
+    },
+    {
+      "shortcode": "sample3",
+      "url": "https://instagram.com/p/sample3",
+      "caption": "New tutorial coming soon! Which topic?",
+      "likes": 484,
+      "comments": 8,
+      "timestamp": "2025-004-01T12:00:00",
+      "media_type": "image",
+      "video_views": 2346
+    },
+    {
+      "shortcode": "sample4",
+      "url": "https://instagram.com/p/sample4",
+      "caption": "Weekend mode ON \ud83d\ude0e",
+      "likes": 481,
+      "comments": 24,
+      "timestamp": "2025-005-01T12:00:00",
+      "media_type": "video",
+      "video_views": 647
+    },
+    {
+      "shortcode": "sample5",
+      "url": "https://instagram.com/p/sample5",
+      "caption": "Grateful for this journey \ud83d\ude4f",
+      "likes": 438,
+      "comments": 23,
+      "timestamp": "2025-006-01T12:00:00",
+      "media_type": "image",
+      "video_views": 3814
+    },
+    {
+      "shortcode": "sample6",
+      "url": "https://instagram.com/p/sample6",
+      "caption": "Behind the scenes of today's shoot \ud83d\udcf8",
+      "likes": 62,
+      "comments": 12,
+      "timestamp": "2025-007-01T12:00:00",
+      "media_type": "image",
+      "video_views": 3544
+    },
+    {
+      "shortcode": "sample7",
+      "url": "https://instagram.com/p/sample7",
+      "caption": "Hot take: consistency beats talent every time",
+      "likes": 313,
+      "comments": 19,
+      "timestamp": "2025-008-01T12:00:00",
+      "media_type": "video",
+      "video_views": 215
+    },
+    {
+      "shortcode": "sample8",
+      "url": "https://instagram.com/p/sample8",
+      "caption": "Who else loves late night coding sessions? \ud83c\udf19",
+      "likes": 461,
+      "comments": 26,
+      "timestamp": "2025-009-01T12:00:00",
+      "media_type": "video",
+      "video_views": 806
+    },
+    {
+      "shortcode": "sample9",
+      "url": "https://instagram.com/p/sample9",
+      "caption": "Throwback to last week's adventure \u2708\ufe0f",
+      "likes": 287,
+      "comments": 30,
+      "timestamp": "2025-010-01T12:00:00",
+      "media_type": "video",
+      "video_views": 1482
+    }
+  ],
+  "followers": 2279,
+  "following": 396,
+  "bio": "Content creator | Building in public \ud83d\ude80",
+  "full_name": "sriramm01",
+  "profile_pic_url": ""
+}
