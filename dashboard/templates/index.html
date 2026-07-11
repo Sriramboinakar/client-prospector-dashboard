@@ -342,30 +342,6 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header"><span class="emoji">${data.prospector.emoji}</span><h2>${data.prospector.name}</h2></div>
-                <div class="card-body">
-                    ${data.prospector.data.map(p => {
-                        let sc = p.lead_score >= 70 ? 'high' : p.lead_score >= 50 ? 'med' : 'low';
-                        return `<div class="prospect-card">
-                            <span class="score ${sc}">${p.lead_score}%</span>
-                            <div class="biz">${p.business}</div>
-                            <div class="meta">${p.niche} · ${p.location} · ${p.reason}</div>
-                            <div class="meta">${p.contact}${p.notes ? ' · '+p.notes : ''}</div>
-                            <div style="margin-top:6px">
-                                <button class="btn-sm" onclick="toggleMsgs(${p.id})">Show Messages</button>
-                                <div id="msgs-${p.id}" style="display:none;margin-top:6px">
-                                    ${p.messages.slice(0,3).map((m, i) => `
-                                        <div style="background:#1a1a2e;border-radius:6px;padding:6px 8px;margin-bottom:4px;font-size:12px;border:1px solid #3a3a5a;display:flex;justify-content:space-between;align-items:flex-start">
-                                            <span style="flex:1;margin-right:6px">${m}</span>
-                                            <button class="btn-sm" onclick="copyMsg(this)" style="background:#4a6a4a;color:#88ddaa;border:none" data-msg="${m.replace(/"/g,'&quot;')}">Copy</button>
-                                        </div>`).join('')}
-                                </div>
-                            </div>
-                        </div>`;
-                    }).join('')}
-                </div>
-            </div>
 
             <div class="card">
                 <div class="card-header"><span class="emoji">${data.outreach.emoji}</span><h2>${data.outreach.name}</h2></div>

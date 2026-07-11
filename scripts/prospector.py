@@ -36,25 +36,7 @@ class ProspectFinder:
         self.emoji = "🎯"
 
     def generate_prospects(self, count=6):
-        prompt = f"""Generate {count} realistic local business prospects in Hyderabad, India who need a website + AI features.
-For each prospect include: business (name), niche, location (Hyderabad area), lead_score (0-100),
-reason (why they need a site), contact (dm/email/phone), status ("active"), notes.
-Return as a JSON array of objects."""
-        result = ai_json(prompt, None)
-        if result and isinstance(result, list):
-            for i, p in enumerate(result):
-                p["id"] = i + 1
-                p.setdefault("status", "active")
-                p.setdefault("contact", "dm")
-            return sorted(result, key=lambda p: p.get("lead_score", 0), reverse=True)
-        return [
-            {"id":1,"business":"Shevvy Chin","niche":"fashion/style","location":"local","lead_score":90,"reason":"needs brand portfolio website","contact":"dm - hot lead","status":"active","notes":"Existing client"},
-            {"id":2,"business":"Nail Art Girl","niche":"beauty/nails","location":"local","lead_score":85,"reason":"portfolio/booking site needed","contact":"dm - hot lead","status":"active","notes":"Existing client"},
-            {"id":3,"business":"Hyderabad Bakers","niche":"food","location":"Banjara Hills","lead_score":72,"reason":"no online ordering","contact":"dm","status":"active","notes":""},
-            {"id":4,"business":"Style Cuts Salon","niche":"salon","location":"Kukatpally","lead_score":65,"reason":"old website, needs redesign","contact":"email","status":"active","notes":""},
-            {"id":5,"business":"Dr. Sharma Dental","niche":"dentist","location":"Jubilee Hills","lead_score":55,"reason":"wants online booking","contact":"phone","status":"active","notes":""},
-            {"id":6,"business":"Click Studio","niche":"photography","location":"Hitech City","lead_score":45,"reason":"portfolio + client portal","contact":"dm","status":"active","notes":""}
-        ]
+        return []
 
 class OutreachManager:
     def __init__(self):

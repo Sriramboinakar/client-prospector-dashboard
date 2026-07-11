@@ -22,8 +22,8 @@ prospector_mod.DATA_DIR = DATA_DIR
 email_mod.DATA_DIR = DATA_DIR
 
 from scripts.prospector import (
-    ProspectFinder, OutreachManager, PipelineTracker,
-    WebsiteInspo, MessageGenerator, EmailCampaign,
+    OutreachManager, PipelineTracker,
+    WebsiteInspo, EmailCampaign,
     NailArtIntegration, AIScoring
 )
 from scripts.email_sender import send_email, send_campaign
@@ -219,23 +219,14 @@ def delete_revenue(entry_id):
 @app.route("/api/agents")
 def get_agents():
     clients = load_clients()
-    pf = ProspectFinder()
     om = OutreachManager()
     pt = PipelineTracker()
     wi = WebsiteInspo()
-    mg = MessageGenerator()
-
-    prospects = pf.generate_prospects(6)
-    prospects_with_messages = []
-    for p in prospects:
-        messages = mg.generate(p)
-        prospects_with_messages.append({**p, "messages": messages["copy_paste"]})
 
     pipeline = pt.get_pipeline(clients)
     stage_counts = {s: pipeline.get(s, 0) for s in STAGES}
 
     return jsonify({
-        "prospector": {"name": "Prospect Finder", "emoji": "🎯", "data": prospects_with_messages},
         "outreach": {"name": "Outreach Manager", "emoji": "📩", "data": om.get_strategy()},
         "pipeline": {"name": "Pipeline Tracker", "emoji": "📊", "data": pipeline},
         "builder": {"name": "Website Builder AI", "emoji": "🛠️", "data": wi.get_recommendations()}
