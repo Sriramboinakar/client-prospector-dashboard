@@ -24,7 +24,7 @@ email_mod.DATA_DIR = DATA_DIR
 from scripts.prospector import (
     OutreachManager, PipelineTracker,
     WebsiteInspo, EmailCampaign,
-    NailArtIntegration, AIScoring
+    AIScoring
 )
 from scripts.email_sender import send_email, send_campaign
 
@@ -263,16 +263,6 @@ def send_campaign_route(campaign_id):
     result = send_campaign(campaign_id, clients)
     log_action("campaign_sent", f"Campaign #{campaign_id}")
     return jsonify(result)
-
-@app.route("/api/nailart")
-def nailart_data():
-    ni = NailArtIntegration()
-    return jsonify(ni.get_client_stats())
-
-@app.route("/api/nailart/bookings")
-def nailart_bookings():
-    ni = NailArtIntegration()
-    return jsonify(ni.get_bookings())
 
 @app.route("/api/todos", methods=["GET"])
 def get_todos():

@@ -181,9 +181,6 @@
             <div class="sidebar-item" data-tab="campaigns">
                 <span class="si-icon">&#9993;</span> Campaigns
             </div>
-            <div class="sidebar-item" data-tab="nailart">
-                <span class="si-icon">&#9830;</span> Nail Art Hub
-            </div>
             <div class="sidebar-item" data-tab="todos">
                 <span class="si-icon">&#9744;</span> To-Do
             </div>
@@ -215,7 +212,7 @@
                 <div class="mtab active" data-tab="dashboard">&#9632;</div>
                 <div class="mtab" data-tab="clients">&#9679;</div>
                 <div class="mtab" data-tab="campaigns">&#9993;</div>
-                <div class="mtab" data-tab="nailart">&#9830;</div>
+    
                 <div class="mtab" data-tab="todos">&#9744;</div>
                 <div class="mtab" data-tab="logs">&#9776;</div>
             </div>
@@ -228,7 +225,7 @@
     <script>
         let allClients = [];
         let allRevenue = [];
-        let nailsData = { total: 0, unique_clients: 0, revenue_total: 0, services: {}, branches: {} };
+
 
         document.getElementById('mobileTabs').addEventListener('click', e => {
             const tab = e.target.closest('.mtab');
@@ -255,23 +252,21 @@
             if (tab === 'dashboard') renderDashboard(c);
             else if (tab === 'clients') renderClientManager(c);
             else if (tab === 'campaigns') renderCampaigns(c);
-            else if (tab === 'nailart') renderNailArt(c);
             else if (tab === 'todos') renderTodos(c);
             else if (tab === 'logs') renderLogs(c);
         }
 
         async function loadAll() {
             try {
-                const [statsRes, clientsRes, revRes, agentsRes, nailRes, campaignRes, todoRes, logRes] = await Promise.all([
+                const [statsRes, clientsRes, revRes, agentsRes, campaignRes, todoRes, logRes] = await Promise.all([
                     fetch('/api/stats'), fetch('/api/clients'), fetch('/api/revenue'),
-                    fetch('/api/agents'), fetch('/api/nailart'), fetch('/api/campaigns'),
+                    fetch('/api/agents'), fetch('/api/campaigns'),
                     fetch('/api/todos'), fetch('/api/logs')
                 ]);
                 const stats = await statsRes.json();
                 allClients = await clientsRes.json();
                 allRevenue = await revRes.json();
                 const agentData = await agentsRes.json();
-                nailsData = await nailRes.json();
                 const campaigns = await campaignRes.json();
                 const todos = await todoRes.json();
                 const logs = await logRes.json();
@@ -475,64 +470,6 @@
             </div>`;
         }
 
-        function renderNailArt(c) {
-            c.innerHTML = `
-            <div class="card full-width">
-                <div class="card-header"><span class="emoji">💅</span><h2>Nail Art Hub — Client Data</h2></div>
-                <div class="card-body">
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
-                        <div class="metric"><div class="value" style="color:#dd88aa">${nailsData.total}</div><div class="label">Total Bookings</div></div>
-                        <div class="metric"><div class="value" style="color:#dd88aa">${nailsData.unique_clients}</div><div class="label">Unique Clients</div></div>
-                        <div class="metric"><div class="value" style="color:#dd88aa">₹${(nailsData.revenue_total || 0).toLocaleString()}</div><div class="label">Booking Revenue</div></div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                        <div style="background:#252550;border-radius:8px;padding:12px">
-                            <div class="section-title" style="margin-top:0">Services Booked</div>
-                            ${Object.keys(nailsData.services || {}).length === 0 ? '<div style="color:#8888cc;font-size:13px">No service data</div>' :
-                            Object.entries(nailsData.services).map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid #2a2a4a"><span>${k}</span><span style="color:#dd88aa;font-weight:600">${v}</span></div>`).join('')}
-                        </div>
-                        <div style="background:#252550;border-radius:8px;padding:12px">
-                            <div class="section-title" style="margin-top:0">Branch Distribution</div>
-                            ${Object.keys(nailsData.branches || {}).length === 0 ? '<div style="color:#8888cc;font-size:13px">No branch data</div>' :
-                            Object.entries(nailsData.branches).map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid #2a2a4a"><span>${k}</span><span style="color:#dd88aa;font-weight:600">${v}</span></div>`).join('')}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card full-width">
-                <div class="card-header"><span class="emoji">📥</span><h2>Import Nail Art Clients as Leads</h2></div>
-                <div class="card-body">
-                    <p style="color:#8888cc;font-size:13px;margin-bottom:8px">Convert Nail Art Hub booking clients into prospector leads to track and follow up.</p>
-                    <button class="btn-sm" style="background:#4a6a4a;padding:8px 16px;font-size:13px" onclick="importNailClients()">Import as Leads</button>
-                    <div id="importResult" style="margin-top:8px;font-size:13px"></div>
-                </div>
-            </div>`;
-        }
-
-        async function importNailClients() {
-            const r = document.getElementById('importResult');
-            r.innerHTML = 'Importing...';
-            try {
-                const res = await fetch('/api/nailart/bookings');
-                const bookings = await res.json();
-                const names = [...new Set(bookings.map(b => b.client_name).filter(n => n))];
-                const existing = new Set(allClients.map(c => c.business.toLowerCase()));
-                const newNames = names.filter(n => !existing.has(n.toLowerCase()));
-                if (newNames.length === 0) {
-                    r.innerHTML = 'All clients already imported!';
-                    return;
-                }
-                await fetch('/api/clients/bulk', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ names: newNames, status: 'lead', niche: 'beauty/nails' })
-                });
-                r.innerHTML = `Imported ${newNames.length} new leads! Reloading...`;
-                setTimeout(() => location.reload(), 1000);
-            } catch(e) {
-                r.innerHTML = `Error: ${e.message}`;
-            }
-        }
 
         function renderTodos(c) {
             const todos = window._todos || [];
