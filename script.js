@@ -67,7 +67,7 @@ function saveClients() { localStorage.setItem(STORAGE_KEY, JSON.stringify(client
 
 function loadSettings() {
   try { const d = localStorage.getItem(SETTINGS_KEY); if (d) return JSON.parse(d); } catch {}
-  return { placesApiKey: '', n8nUrl: '' };
+  return { n8nUrl: '' };
 }
 function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
 
@@ -227,186 +227,164 @@ document.getElementById('projectName').onkeydown = e => { if (e.key === 'Enter')
 document.getElementById('msgInput').onkeydown = e => { if (e.key === 'Enter') document.getElementById('broadcastBtn').click(); };
 
 // ============================================================
-// PROSPECTOR ENGINE — Google Places API (real data)
+// PROSPECTOR ENGINE — OpenStreetMap Overpass API (free, no key)
 // ============================================================
 
 const searchBtn = document.getElementById('searchBtn');
 const resultsGrid = document.getElementById('resultsGrid');
 const resultsPlaceholder = document.getElementById('resultsPlaceholder');
 
-// Map user-friendly category to Google Places types
-const categoryMap = {
-  'restaurant': 'restaurant',
-  'food': 'restaurant',
-  'fashion': 'clothing_store',
-  'apparel': 'clothing_store',
-  'fitness': 'gym',
-  'gym': 'gym',
-  'beauty': 'beauty_salon',
-  'salon': 'beauty_salon',
-  'spa': 'spa',
-  'technology': 'electronics_store',
-  'it': 'electronics_store',
-  'real estate': 'real_estate_agency',
-  'healthcare': 'hospital',
-  'medical': 'hospital',
-  'clinic': 'hospital',
-  'education': 'school',
-  'school': 'school',
-  'coaching': 'school',
-  'ecommerce': 'shopping_mall',
-  'photography': 'photographer',
-  'travel': 'travel_agency',
-  'tourism': 'travel_agency',
-  'automotive': 'car_dealer',
-  'car': 'car_dealer',
-  'legal': 'lawyer',
-  'law': 'lawyer',
-  'financial': 'bank',
-  'bank': 'bank',
-  'insurance': 'insurance_agency',
-  'home services': 'general_contractor',
-  'entertainment': 'movie_theater',
-  'jewelry': 'jewelry_store',
-  'cafe': 'cafe',
-  'bakery': 'bakery',
-  'event planning': 'event_venue',
-  'architecture': 'architect',
-  'doctor': 'doctor',
-  'dentist': 'dentist',
-  'pharmacy': 'pharmacy',
-  'grocery': 'grocery_or_supermarket',
-  'supermarket': 'grocery_or_supermarket',
-  'pet': 'pet_store',
-  'hardware': 'hardware_store',
-  'furniture': 'furniture_store',
-  'electronics': 'electronics_store',
-  'book': 'book_store',
-  'library': 'library',
-  'park': 'park',
-  'museum': 'museum',
-  'art': 'art_gallery',
-  'gallery': 'art_gallery',
-  'nightclub': 'night_club',
-  'bar': 'bar',
-  'hair': 'hair_care',
-  'laundry': 'laundry',
-  'parking': 'parking',
-  'gas': 'gas_station',
-  'hotel': 'lodging',
-  'lodging': 'lodging',
-  'church': 'church',
-  'mosque': 'mosque',
-  'hindu': 'hindu_temple',
-  'temple': 'hindu_temple',
-  'university': 'university',
-  'college': 'university',
+const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+
+// Map niche to OSM tags
+const osmTags = {
+  'restaurant': '["amenity"="restaurant"]',
+  'food': '["amenity"="restaurant"]',
+  'fashion': '["shop"="clothes"]',
+  'apparel': '["shop"="clothes"]',
+  'clothing': '["shop"="clothes"]',
+  'fitness': '["leisure"="fitness_centre"]',
+  'gym': '["leisure"="fitness_centre"]',
+  'beauty': '["shop"="beauty"]',
+  'salon': '["shop"="hairdresser"]',
+  'spa': '["amenity"="spa"]',
+  'technology': '["shop"="computer"]',
+  'it': '["shop"="computer"]',
+  'real estate': '["office"="real_estate"]',
+  'healthcare': '["amenity"="hospital"]',
+  'hospital': '["amenity"="hospital"]',
+  'medical': '["amenity"="clinic"]',
+  'clinic': '["amenity"="clinic"]',
+  'doctor': '["amenity"="doctors"]',
+  'dentist': '["amenity"="dentist"]',
+  'pharmacy': '["amenity"="pharmacy"]',
+  'education': '["amenity"="school"]',
+  'school': '["amenity"="school"]',
+  'college': '["amenity"="college"]',
+  'university': '["amenity"="university"]',
+  'coaching': '["amenity"="tutoring"]',
+  'photography': '["shop"="photo"]',
+  'travel': '["shop"="travel_agency"]',
+  'tourism': '["shop"="travel_agency"]',
+  'automotive': '["shop"="car"]',
+  'car': '["shop"="car"]',
+  'legal': '["office"="lawyer"]',
+  'law': '["office"="lawyer"]',
+  'lawyer': '["office"="lawyer"]',
+  'financial': '["office"="financial"]',
+  'bank': '["amenity"="bank"]',
+  'insurance': '["office"="insurance"]',
+  'home services': '["shop"="hardware"]',
+  'entertainment': '["amenity"="cinema"]',
+  'jewelry': '["shop"="jewelry"]',
+  'jewellery': '["shop"="jewelry"]',
+  'cafe': '["amenity"="cafe"]',
+  'bakery': '["shop"="bakery"]',
+  'grocery': '["shop"="supermarket"]',
+  'supermarket': '["shop"="supermarket"]',
+  'pet': '["shop"="pet"]',
+  'hardware': '["shop"="hardware"]',
+  'furniture': '["shop"="furniture"]',
+  'electronics': '["shop"="electronics"]',
+  'book': '["shop"="books"]',
+  'bar': '["amenity"="bar"]',
+  'hair': '["shop"="hairdresser"]',
+  'laundry': '["shop"="laundry"]',
+  'hotel': '["tourism"="hotel"]',
+  'lodging': '["tourism"="hotel"]',
+  'parking': '["amenity"="parking"]',
+  'gas': '["amenity"="fuel"]',
+  'museum': '["tourism"="museum"]',
+  'art': '["shop"="art"]',
+  'gallery': '["tourism"="gallery"]',
+  'nightclub': '["amenity"="nightclub"]',
+  'temple': '["amenity"="place_of_worship"]["+religion"="hindu"]',
+  'church': '["amenity"="place_of_worship"]["+religion"="christian"]',
+  'mosque': '["amenity"="place_of_worship"]["+religion"="muslim"]',
 };
 
-// Indian city coordinates for geocoding
-const cityCoords = {
-  'mumbai': { lat: 19.0760, lng: 72.8777 },
-  'delhi': { lat: 28.7041, lng: 77.1025 },
-  'bangalore': { lat: 12.9716, lng: 77.5946 },
-  'bengaluru': { lat: 12.9716, lng: 77.5946 },
-  'chennai': { lat: 13.0827, lng: 80.2707 },
-  'madras': { lat: 13.0827, lng: 80.2707 },
-  'hyderabad': { lat: 17.3850, lng: 78.4867 },
-  'kolkata': { lat: 22.5726, lng: 88.3639 },
-  'calcutta': { lat: 22.5726, lng: 88.3639 },
-  'pune': { lat: 18.5204, lng: 73.8567 },
-  'ahmedabad': { lat: 23.0225, lng: 72.5714 },
-  'jaipur': { lat: 26.9124, lng: 75.7873 },
-  'lucknow': { lat: 26.8467, lng: 80.9462 },
-  'surat': { lat: 21.1702, lng: 72.8311 },
-  'nagpur': { lat: 21.1458, lng: 79.0882 },
-  'indore': { lat: 22.7196, lng: 75.8577 },
-  'bhopal': { lat: 23.2599, lng: 77.4126 },
-  'visakhapatnam': { lat: 17.6868, lng: 83.2185 },
-  'vadodara': { lat: 22.3072, lng: 73.1812 },
-  'guwahati': { lat: 26.1445, lng: 91.7362 },
-  'chandigarh': { lat: 30.7333, lng: 76.7794 },
-  'kochi': { lat: 9.9312, lng: 76.2673 },
-  'coimbatore': { lat: 11.0168, lng: 76.9558 },
-  'mangalore': { lat: 12.9141, lng: 74.8560 },
-  'mysore': { lat: 12.2958, lng: 76.6394 },
-  'trivandrum': { lat: 8.5241, lng: 76.9366 },
-  'thiruvananthapuram': { lat: 8.5241, lng: 76.9366 },
-  'new york': { lat: 40.7128, lng: -74.0060 },
-  'los angeles': { lat: 34.0522, lng: -118.2437 },
-  'london': { lat: 51.5074, lng: -0.1278 },
-  'dubai': { lat: 25.2048, lng: 55.2708 },
-  'singapore': { lat: 1.3521, lng: 103.8198 },
-  'sydney': { lat: -33.8688, lng: 151.2093 },
-  'toronto': { lat: 43.6532, lng: -79.3832 },
-  'berlin': { lat: 52.5200, lng: 13.4050 },
-  'paris': { lat: 48.8566, lng: 2.3522 },
-  'tokyo': { lat: 35.6762, lng: 139.6503 },
-};
-
-async function searchPlaces(niche, location, radius) {
-  if (!settings.placesApiKey) return null;
-
-  // Find the Google Places type
+async function searchOSM(niche, location, limit = 20) {
   const nicheLower = niche.toLowerCase().trim();
-  let placeType = categoryMap[nicheLower];
-  if (!placeType) {
-    // Fuzzy match
-    for (const [key, val] of Object.entries(categoryMap)) {
-      if (nicheLower.includes(key) || key.includes(nicheLower)) { placeType = val; break; }
+  let tag = osmTags[nicheLower];
+
+  // Fuzzy match
+  if (!tag) {
+    for (const [key, val] of Object.entries(osmTags)) {
+      if (nicheLower.includes(key) || key.includes(nicheLower)) { tag = val; break; }
     }
   }
+  if (!tag) tag = '["shop"="yes"]'; // fallback
 
-  // Geocode location
-  const locLower = location.toLowerCase().trim();
-  let coords = cityCoords[locLower];
-  if (!coords) {
-    // Try to geocode using Google Geocoding API
-    try {
-      const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${settings.placesApiKey}`);
-      const geoData = await geoRes.json();
-      if (geoData.results && geoData.results[0]) {
-        coords = geoData.results[0].geometry.location;
-      }
-    } catch {}
-  }
-  if (!coords) return null;
+  // Escape quotes for Overpass
+  const tagClean = tag.replace(/\+"/g, '"');
 
-  const typeParam = placeType ? `&type=${placeType}` : '';
-  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.lat},${coords.lng}&radius=${radius}${typeParam}&key=${settings.placesApiKey}`;
+  // Build area query
+  const q = location.trim();
+  const query = `
+    [out:json][timeout:15];
+    area${q ? `["name"~"${escOsm(q)}"][admin_level~"[468]"]` : '(around:0,0,0)'}->.a;
+    (
+      node${tagClean}(area.a);
+      way${tagClean}(area.a);
+    );
+    out ${limit} center;
+  `;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(OVERPASS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(query),
+    });
     const data = await res.json();
-    if (!data.results || !data.results.length) return [];
+    if (!data.elements || !data.elements.length) return [];
 
-    // Get details for each result to extract phone + website
     const results = [];
-    for (const place of data.results.slice(0, 20)) {
-      let phone = '', website = '';
-      try {
-        const detailRes = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,types,rating,user_ratings_total,vicinity&key=${settings.placesApiKey}`);
-        const detail = await detailRes.json();
-        if (detail.result) {
-          phone = detail.result.formatted_phone_number || '';
-          website = detail.result.website || '';
-        }
-      } catch {}
-
+    for (const el of data.elements.slice(0, limit)) {
+      const t = el.tags || {};
+      const lat = el.lat || (el.center ? el.center.lat : 0);
+      const lon = el.lon || (el.center ? el.center.lon : 0);
+      const addr = [t['addr:housenumber'], t['addr:street'], t['addr:city'], t['addr:postcode']].filter(Boolean).join(', ');
       results.push({
-        name: place.name,
-        location: place.vicinity || location,
-        address: place.vicinity || '',
-        phone: phone,
-        website: website,
-        rating: place.rating || '',
-        reviews: place.user_ratings_total || 0,
-        category: (place.types || []).filter(t => !t.includes('_list') && !t.includes('establishment')).join(', ') || niche,
-        source: 'Places API',
+        name: t.name || 'Unknown',
+        location: addr || location,
+        phone: t.phone || t['contact:phone'] || '',
+        website: t.website || t['contact:website'] || '',
+        instagram: t['contact:instagram'] ? '@' + t['contact:instagram'] : '',
+        email: t.email || t['contact:email'] || '',
+        category: t.shop || t.amenity || t.office || t.leisure || t.tourism || niche,
+        source: 'OpenStreetMap',
+        lat, lon,
       });
     }
     return results;
   } catch { return null; }
+}
+
+function escOsm(s) {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+}
+
+// Demo fallback
+function genDemoResults(niche, location) {
+  const demo = [
+    { name: 'Taj Mahal Palace', phone: '+91 22 6665 3366', website: 'https://taj.tajhotels.com', rating: 4.7, reviews: 12453 },
+    { name: 'Bangalore Palace', phone: '+91 80 2670 0107', website: 'https://bangalorepalace.in', rating: 4.3, reviews: 8234 },
+    { name: 'Chaat Street Food', phone: '+91 11 2323 4567', website: 'https://chaatstreet.in', rating: 4.1, reviews: 3452 },
+    { name: 'Urban Climb Gym', phone: '+91 99 8765 4321', website: 'https://urbanclimb.fit', rating: 4.5, reviews: 2156 },
+    { name: 'Golden Harvest Restaurant', phone: '+91 44 2345 6789', website: 'https://goldenharvest.in', rating: 4.2, reviews: 5678 },
+    { name: 'Vogue Fashion Studio', phone: '+91 33 2123 4567', website: 'https://voguestudio.in', rating: 4.0, reviews: 1890 },
+    { name: 'TechPro Solutions', phone: '+91 80 4567 8901', website: 'https://techpro.in', rating: 4.6, reviews: 3120 },
+    { name: 'Green Valley Salon', phone: '+91 22 3456 7890', website: 'https://greenvalleysalon.com', rating: 4.3, reviews: 4567 },
+    { name: 'Heritage Realty', phone: '+91 11 5678 9012', website: 'https://heritagerealty.in', rating: 4.4, reviews: 2345 },
+    { name: 'Bright Future Academy', phone: '+91 20 6789 0123', website: 'https://brightfuture.edu', rating: 4.8, reviews: 1890 },
+    { name: 'City Hospital & Research', phone: '+91 79 7890 1234', website: 'https://cityhospital.in', rating: 4.5, reviews: 6789 },
+    { name: 'Supreme Legal Chambers', phone: '+91 22 8901 2345', website: 'https://supremelegal.in', rating: 4.2, reviews: 1234 },
+    { name: 'Pinnacle Financial Services', phone: '+91 44 9012 3456', website: 'https://pinnaclefin.in', rating: 4.1, reviews: 3456 },
+    { name: 'Lens & Light Photography', phone: '+91 80 0123 4567', website: 'https://lenslight.in', rating: 4.7, reviews: 890 },
+    { name: 'WanderLust Travels', phone: '+91 33 1234 5678', website: 'https://wanderlust.in', rating: 4.3, reviews: 2345 },
+  ];
+  return demo.slice(0, 8 + Math.floor(Math.random() * 4)).map(d => ({ ...d, location: location || 'Mumbai', category: niche, source: 'Demo' }));
 }
 
 // Demo fallback — only used if Places API is not configured
@@ -501,32 +479,30 @@ function showResults(results) {
 document.getElementById('searchBtn').onclick = async () => {
   const niche = document.getElementById('searchNiche').value.trim();
   const location = document.getElementById('searchLocation').value.trim();
-  const radius = parseInt(document.getElementById('searchRadius').value) || 50000;
+  const limit = parseInt(document.getElementById('searchLimit').value) || 20;
   if (!niche) { alert('Enter a niche to search'); return; }
 
   searchBtn.classList.add('loading');
   let results = null;
   let source = '';
 
-  // 1. Try Google Places API (real data)
-  if (settings.placesApiKey) {
-    results = await searchPlaces(niche, location, radius);
-    if (results) source = 'Google Places';
-  }
+  // 1. Try OpenStreetMap (free, no key, real data)
+  results = await searchOSM(niche, location, limit);
+  if (results) source = 'OpenStreetMap';
 
   // 2. Enrich with n8n if available
   if (results && results.length) {
     results = await enrichViaN8n(results);
   }
 
-  // 3. Fallback to demo
-  if (!results) {
+  // 3. Fallback to demo if OSM fails
+  if (!results || !results.length) {
     await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
     results = genDemoResults(niche, location);
     source = 'Demo';
-    log('sys', `Prospector: demo results for "${niche}" — configure Places API in Settings for live data`);
+    log('sys', `Prospector: showing demo — OSM returned no results for "${niche}"`);
   } else {
-    log('sys', `Prospector: ${results.length} businesses found via ${source} for "${niche}"`);
+    log('sys', `Prospector: ${results.length} real businesses from ${source} for "${niche}"`);
   }
 
   showResults(results);
@@ -541,26 +517,12 @@ document.getElementById('searchLocation').addEventListener('keydown', e => { if 
 // ============================================================
 
 function applySettings() {
-  if (settings.placesApiKey) {
-    document.getElementById('placesBadge').textContent = 'Connected';
-    document.getElementById('placesBadge').className = 'source-badge active';
-  }
+  document.getElementById('n8nUrl').value = settings.n8nUrl;
   if (settings.n8nUrl) {
     document.getElementById('n8nBadge').textContent = 'Connected';
     document.getElementById('n8nBadge').className = 'source-badge active';
   }
-  document.getElementById('placesApiKey').value = settings.placesApiKey;
-  document.getElementById('n8nUrl').value = settings.n8nUrl;
 }
-
-document.getElementById('savePlacesKey').onclick = () => {
-  settings.placesApiKey = document.getElementById('placesApiKey').value.trim();
-  saveSettings();
-  applySettings();
-  const st = document.getElementById('placesStatus');
-  st.textContent = '✓ Saved';
-  setTimeout(() => st.textContent = '', 2000);
-};
 
 document.getElementById('saveN8n').onclick = () => {
   settings.n8nUrl = document.getElementById('n8nUrl').value.trim();

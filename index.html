@@ -166,13 +166,11 @@
                 <input type="text" id="searchLocation" placeholder="City, State, Country..." class="s-input">
               </div>
               <div class="search-field search-platform">
-                <label>Radius (km)</label>
-                <select id="searchRadius" class="s-input s-select">
-                  <option value="5000">5 km</option>
-                  <option value="10000">10 km</option>
-                  <option value="25000">25 km</option>
-                  <option value="50000" selected>50 km</option>
-                  <option value="100000">100 km</option>
+                <label>Max Results</label>
+                <select id="searchLimit" class="s-input s-select">
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="40">40</option>
                 </select>
               </div>
               <button id="searchBtn" class="s-btn">
@@ -209,21 +207,16 @@
 
           <div class="settings-grid">
             <div class="settings-card highlight">
-              <h3>📍 Google Places API</h3>
-              <p class="settings-desc">Returns <strong>real businesses</strong> with phone, address, website & rating by niche + location. Free tier gives you <strong>$200/month credit</strong>.</p>
+              <h3>📍 OpenStreetMap (Active)</h3>
+              <p class="settings-desc">Using <strong>OpenStreetMap Overpass API</strong> — completely free, no API key needed. Returns real business names, addresses, phones & websites worldwide. <span style="color:var(--green)">✓ Works out of the box</span></p>
               <div class="setup-steps">
-                <p><strong>Setup:</strong></p>
-                <p>1. Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a></p>
-                <p>2. Create a project → Enable <strong>Places API</strong></p>
-                <p>3. Go to Credentials → Create API Key</p>
-                <p>4. Paste it below</p>
+                <p><strong>How it works:</strong></p>
+                <p>• Searches OpenStreetMap for businesses by type + location</p>
+                <p>• Returns name, address, phone, website, Instagram if available</p>
+                <p>• Covers 200+ countries including all of India</p>
+                <p>• No registration, no API key, no billing</p>
+                <p style="color:var(--muted);margin-top:0.3rem;font-size:0.68rem;">Rate limit: ~2 queries/sec (generous for personal use)</p>
               </div>
-              <div class="settings-field">
-                <label>Google API Key</label>
-                <input type="password" id="placesApiKey" placeholder="AIzaSy..." class="f-input">
-              </div>
-              <button id="savePlacesKey" class="f-btn primary">Save Key</button>
-              <span id="placesStatus" class="settings-status"></span>
             </div>
 
             <div class="settings-card">
@@ -251,9 +244,9 @@
               <h3>📊 Data Sources</h3>
               <p class="settings-desc">Your current data sources and their status.</p>
               <div class="source-list">
-                <div class="source-item"><span class="source-name">Google Places API</span><span class="source-badge" id="placesBadge">Not configured</span></div>
-                <div class="source-item"><span class="source-name">Demo Mode</span><span class="source-badge active">Active</span></div>
-                <div class="source-item"><span class="source-name">n8n Enrichment</span><span class="source-badge" id="n8nBadge">Not configured</span></div>
+                <div class="source-item"><span class="source-name">OpenStreetMap</span><span class="source-badge active">Live</span></div>
+                <div class="source-item"><span class="source-name">Demo Fallback</span><span class="source-badge active">Ready</span></div>
+                <div class="source-item"><span class="source-name">n8n Enrichment</span><span class="source-badge" id="n8nBadge">Optional</span></div>
               </div>
             </div>
           </div>
