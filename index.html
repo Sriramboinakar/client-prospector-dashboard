@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-
 </head>
 <body>
 
@@ -16,9 +15,14 @@
 
   <header>
     <div class="container nav">
-      <div class="logo-wrap">
+      <div class="logo-wrap" data-tab="dashboard">
         <span class="logo-icon">◈</span>
         <span class="logo-text">SRIRAM</span>
+      </div>
+      <div class="nav-tabs">
+        <span class="nav-tab active" data-tab="dashboard">Dashboard</span>
+        <span class="nav-tab" data-tab="prospector">Prospector</span>
+        <span class="nav-tab" data-tab="settings">Settings</span>
       </div>
       <div class="header-right">
         <span class="live-dot"></span>
@@ -28,138 +32,232 @@
   </header>
 
   <main>
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <div class="hero-chip reveal">Client Operations OS</div>
-          <h1 class="hero-title reveal">
-            <span class="line">Full Control.</span>
-            <span class="line accent">Zero Chaos.</span>
-          </h1>
-          <p class="hero-sub reveal">Manage clients, track revenue, automate follow-ups — all from one cockpit.</p>
+
+    <!-- ===== DASHBOARD TAB ===== -->
+    <section class="tab-content active" id="tab-dashboard">
+      <div class="hero">
+        <div class="container">
+          <div class="hero-content">
+            <div class="hero-chip reveal">Client Operations OS</div>
+            <h1 class="hero-title reveal">
+              <span class="line">Full Control.</span>
+              <span class="line accent">Zero Chaos.</span>
+            </h1>
+            <p class="hero-sub reveal">Manage clients, track revenue, automate follow-ups.</p>
+          </div>
+          <div class="hero-stats reveal">
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-body"><span class="stat-num">0</span><span class="stat-label">Clients</span></div></div>
+            <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-body"><span class="stat-num">0</span><span class="stat-label">Revenue</span></div></div>
+            <div class="stat-card"><div class="stat-icon">⚡</div><div class="stat-body"><span class="stat-num">0</span><span class="stat-label">Active</span></div></div>
+            <div class="stat-card"><div class="stat-icon">★</div><div class="stat-body"><span class="stat-num">0</span><span class="stat-label">Satisfaction</span></div></div>
+          </div>
         </div>
-        <div class="hero-stats reveal">
-          <div class="stat-card" data-delay="0">
-            <div class="stat-icon stat-clients">👥</div>
-            <div class="stat-body">
-              <span class="stat-num" data-target="0">0</span>
-              <span class="stat-label">Clients</span>
-            </div>
+      </div>
+
+      <div class="pipeline-section" id="pipeline">
+        <div class="container">
+          <div class="section-head reveal">
+            <h2 class="section-title">Client Pipeline</h2>
+            <p class="section-sub">Drag cards to update status</p>
           </div>
-          <div class="stat-card" data-delay="150">
-            <div class="stat-icon stat-revenue">💰</div>
-            <div class="stat-body">
-              <span class="stat-num" data-target="0">0</span>
-              <span class="stat-label">Revenue</span>
+          <div class="pipeline reveal">
+            <div class="pipeline-col" data-stage="lead">
+              <div class="col-header"><span class="col-dot lead"></span><h3>Leads</h3><span class="col-count" id="leadCount">0</span></div>
+              <div class="col-body" id="leadContainer"></div>
             </div>
-          </div>
-          <div class="stat-card" data-delay="300">
-            <div class="stat-icon stat-active">⚡</div>
-            <div class="stat-body">
-              <span class="stat-num" data-target="0">0</span>
-              <span class="stat-label">Active</span>
+            <div class="pipeline-col" data-stage="active">
+              <div class="col-header"><span class="col-dot active"></span><h3>Active</h3><span class="col-count" id="activeCount">0</span></div>
+              <div class="col-body" id="activeContainer"></div>
             </div>
-          </div>
-          <div class="stat-card" data-delay="450">
-            <div class="stat-icon stat-rate">★</div>
-            <div class="stat-body">
-              <span class="stat-num" data-target="0">0</span>
-              <span class="stat-label">Satisfaction</span>
+            <div class="pipeline-col" data-stage="completed">
+              <div class="col-header"><span class="col-dot completed"></span><h3>Completed</h3><span class="col-count" id="completedCount">0</span></div>
+              <div class="col-body" id="completedContainer"></div>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <section class="pipeline-section" id="pipeline">
-      <div class="container">
-        <div class="section-head reveal">
-          <h2 class="section-title">Client Pipeline</h2>
-          <p class="section-sub">Drag clients between stages to update status</p>
-        </div>
-        <div class="pipeline reveal">
-          <div class="pipeline-col" data-stage="lead">
-            <div class="col-header">
-              <span class="col-dot lead"></span>
-              <h3>Leads</h3>
-              <span class="col-count" id="leadCount">0</span>
-            </div>
-            <div class="col-body" id="leadContainer"></div>
+      <div class="activity-section">
+        <div class="container">
+          <div class="section-head reveal">
+            <h2 class="section-title">Automation Feed</h2>
+            <p class="section-sub">Real-time events</p>
           </div>
-          <div class="pipeline-col" data-stage="active">
-            <div class="col-header">
-              <span class="col-dot active"></span>
-              <h3>Active</h3>
-              <span class="col-count" id="activeCount">0</span>
-            </div>
-            <div class="col-body" id="activeContainer"></div>
-          </div>
-          <div class="pipeline-col" data-stage="completed">
-            <div class="col-header">
-              <span class="col-dot completed"></span>
-              <h3>Completed</h3>
-              <span class="col-count" id="completedCount">0</span>
-            </div>
-            <div class="col-body" id="completedContainer"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="activity-section" id="activity">
-      <div class="container">
-        <div class="section-head reveal">
-          <h2 class="section-title">Automation Feed</h2>
-          <p class="section-sub">Real-time client communications & system events</p>
-        </div>
-        <div class="activity-panel reveal">
-          <div class="log-container" id="logContainer">
-            <div class="log-entry sys">
-              <span class="log-icon">◆</span>
-              <span class="log-time">0:00</span>
-              <span class="log-agent">System</span>
-              <span class="log-msg">Command Center online</span>
+          <div class="activity-panel reveal">
+            <div class="log-container" id="logContainer">
+              <div class="log-entry sys"><span class="log-icon">◆</span><span class="log-time">0:00</span><span class="log-agent">System</span><span class="log-msg">Command Center online</span></div>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <section class="actions-section" id="actions">
-      <div class="container">
-        <div class="section-head reveal">
-          <h2 class="section-title">Quick Actions</h2>
-          <p class="section-sub">Add clients or send broadcast messages</p>
-        </div>
-        <div class="actions-grid reveal">
-          <div class="action-card add-client">
-            <h3>+ New Client</h3>
-            <div class="action-form">
-              <div class="form-row">
-                <input type="text" id="clientName" placeholder="Client name" class="f-input">
-                <input type="text" id="projectName" placeholder="Project" class="f-input">
+      <div class="actions-section">
+        <div class="container">
+          <div class="section-head reveal">
+            <h2 class="section-title">Quick Actions</h2>
+          </div>
+          <div class="actions-grid reveal">
+            <div class="action-card">
+              <h3>+ New Client</h3>
+              <div class="action-form">
+                <div class="form-row"><input type="text" id="clientName" placeholder="Client name" class="f-input"><input type="text" id="projectName" placeholder="Project" class="f-input"></div>
+                <div class="form-row">
+                  <select id="stageSelect" class="f-select"><option value="lead">Lead</option><option value="active">Active</option><option value="completed">Completed</option></select>
+                  <input type="number" id="clientValue" placeholder="Value ($)" class="f-input" min="0">
+                </div>
+                <button id="addClientBtn" class="f-btn primary">Add Client</button>
               </div>
-              <div class="form-row">
-                <select id="stageSelect" class="f-select">
-                  <option value="lead">Lead</option>
-                  <option value="active">Active</option>
-                  <option value="completed">Completed</option>
+            </div>
+            <div class="action-card">
+              <h3>📡 Broadcast</h3>
+              <div class="action-form">
+                <input type="text" id="msgInput" placeholder="Message to all clients..." class="f-input full">
+                <button id="broadcastBtn" class="f-btn secondary">Send to All</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROSPECTOR TAB ===== -->
+    <section class="tab-content" id="tab-prospector">
+      <div class="hero prospector-hero">
+        <div class="container">
+          <div class="hero-content">
+            <div class="hero-chip">🚀 Lead Prospector</div>
+            <h1 class="hero-title">
+              <span class="line">Find & Capture.</span>
+              <span class="line accent">Any Niche. Anywhere.</span>
+            </h1>
+            <p class="hero-sub">Search businesses by niche and location — get Instagram handles, emails, and contacts.</p>
+          </div>
+
+          <div class="search-panel">
+            <div class="search-row">
+              <div class="search-field">
+                <label>Niche / Category</label>
+                <input type="text" id="searchNiche" placeholder="e.g. Fitness, Restaurant, Fashion..." class="s-input" list="nicheList">
+                <datalist id="nicheList">
+                  <option value="Restaurant / Food">
+                  <option value="Fashion / Apparel">
+                  <option value="Fitness / Gym">
+                  <option value="Beauty / Salon / Spa">
+                  <option value="Technology / IT">
+                  <option value="Real Estate">
+                  <option value="Healthcare / Medical">
+                  <option value="Education / Coaching">
+                  <option value="E-commerce / D2C">
+                  <option value="Photography">
+                  <option value="Travel / Tourism">
+                  <option value="Automotive">
+                  <option value="Legal / Law">
+                  <option value="Financial Services">
+                  <option value="Home Services">
+                  <option value="Entertainment / Media">
+                  <option value="Jewelry / Accessories">
+                  <option value="Cafe / Bakery">
+                  <option value="Event Planning">
+                  <option value="Architecture / Interior">
+                </datalist>
+              </div>
+              <div class="search-field">
+                <label>Location</label>
+                <input type="text" id="searchLocation" placeholder="City, State, Country..." class="s-input">
+              </div>
+              <div class="search-field search-platform">
+                <label>Source</label>
+                <select id="searchSource" class="s-input s-select">
+                  <option value="google">Google Search</option>
+                  <option value="instagram">Instagram</option>
                 </select>
-                <input type="number" id="clientValue" placeholder="Value ($)" class="f-input" min="0">
               </div>
-              <button id="addClientBtn" class="f-btn primary">Add Client</button>
+              <button id="searchBtn" class="s-btn">
+                <span class="s-btn-text">Search</span>
+                <span class="s-btn-loader"></span>
+              </button>
             </div>
           </div>
-          <div class="action-card broadcast">
-            <h3>📡 Broadcast</h3>
-            <div class="action-form">
-              <input type="text" id="msgInput" placeholder="Message to all clients..." class="f-input full">
-              <button id="broadcastBtn" class="f-btn secondary">Send to All</button>
+
+          <div class="search-results" id="searchResults">
+            <div class="results-placeholder" id="resultsPlaceholder">
+              <div class="placeholder-icon">🔍</div>
+              <p>Enter a niche + location above to find businesses</p>
+              <p class="placeholder-sub">Results will appear here. Click any to add directly to your pipeline.</p>
+            </div>
+            <div class="results-grid" id="resultsGrid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS TAB ===== -->
+    <section class="tab-content" id="tab-settings">
+      <div class="hero settings-hero">
+        <div class="container">
+          <div class="hero-content">
+            <div class="hero-chip">⚙️ Settings</div>
+            <h1 class="hero-title">
+              <span class="line">API Keys &</span>
+              <span class="line accent">Integrations.</span>
+            </h1>
+            <p class="hero-sub">Connect external services to power up your prospector.</p>
+          </div>
+
+          <div class="settings-grid">
+            <div class="settings-card">
+              <h3>🔍 Google Custom Search</h3>
+              <p class="settings-desc">Used to search for businesses by niche + location. Get a free API key from <span class="code">console.cloud.google.com</span></p>
+              <div class="settings-field">
+                <label>API Key</label>
+                <input type="password" id="gApiKey" placeholder="AIza..." class="f-input">
+              </div>
+              <div class="settings-field">
+                <label>Search Engine ID</label>
+                <input type="text" id="gCx" placeholder="your_search_engine_id" class="f-input">
+              </div>
+              <button id="saveGoogleSettings" class="f-btn primary">Save</button>
+              <span id="googleStatus" class="settings-status"></span>
+            </div>
+
+            <div class="settings-card">
+              <h3>🤖 n8n Workflow</h3>
+              <p class="settings-desc">For deeper Instagram scraping + contact enrichment. Deploy the workflow and paste the webhook URL.</p>
+              <div class="settings-field">
+                <label>Webhook URL</label>
+                <input type="url" id="n8nUrl" placeholder="https://your-n8n.com/webhook/prospect" class="f-input">
+              </div>
+              <button id="saveN8n" class="f-btn primary">Save</button>
+              <span id="n8nStatus" class="settings-status"></span>
+              <details class="workflow-details">
+                <summary>📋 n8n Workflow Setup</summary>
+                <div class="workflow-code">
+                  <p>1. Open n8n → New Workflow</p>
+                  <p>2. Add <strong>Webhook</strong> trigger (POST)</p>
+                  <p>3. Add <strong>HTTP Request</strong> node to call Instagram/Google APIs</p>
+                  <p>4. Add <strong>HTML Extract</strong> or <strong>AI node</strong> to parse contact info</p>
+                  <p>5. Add <strong>Respond to Webhook</strong> node returning JSON array</p>
+                  <p>6. Copy the webhook URL and paste above</p>
+                  <p class="code-block">Expected response format:<br>[{ "name": "...", "instagram": "...", "email": "...", "phone": "..." }]</p>
+                </div>
+              </details>
+            </div>
+
+            <div class="settings-card">
+              <h3>📊 Data Sources</h3>
+              <p class="settings-desc">Your current search sources and their status.</p>
+              <div class="source-list">
+                <div class="source-item"><span class="source-name">Demo Data</span><span class="source-badge active">Active</span></div>
+                <div class="source-item"><span class="source-name">Google Custom Search</span><span class="source-badge" id="googleBadge">Not configured</span></div>
+                <div class="source-item"><span class="source-name">n8n Workflow</span><span class="source-badge" id="n8nBadge">Not configured</span></div>
+                <div class="source-item"><span class="source-name">Instagram Scraper</span><span class="source-badge" id="instaBadge">Coming soon</span></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
+
   </main>
 
   <footer>
