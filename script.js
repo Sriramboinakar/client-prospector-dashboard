@@ -1,4 +1,101 @@
 // ============================================================
+// 2D CANVAS BACKGROUND — lightweight particles + connections
+// ============================================================
+
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+}
+resize();
+addEventListener('resize', resize);
+
+const particles = [];
+const PCOUNT = 80;
+const CONN_DIST = 120;
+
+function rand(a, b) { return a + Math.random() * (b - a); }
+
+for (let i = 0; i < PCOUNT; i++) {
+  particles.push({
+    x: rand(0, W), y: rand(0, H),
+    vx: rand(-0.2, 0.2), vy: rand(-0.2, 0.2),
+    r: rand(0.5, 2),
+    alpha: rand(0.2, 0.6),
+    hue: rand(220, 280),
+  });
+}
+
+// Mouse parallax offset
+let mx = 0, my = 0, tmx = 0, tmy = 0;
+document.addEventListener('mousemove', e => {
+  tmx = (e.clientX / W - 0.5) * 2;
+  tmy = (e.clientY / H - 0.5) * 2;
+});
+
+let running = true;
+document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running) draw(); });
+
+function draw() {
+  if (!running) return;
+  requestAnimationFrame(draw);
+
+  mx += (tmx - mx) * 0.03;
+  my += (tmy - my) * 0.03;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Update and draw particles
+  const par = mx * 8, offY = my * 5;
+
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < -10) p.x = W + 10;
+    if (p.x > W + 10) p.x = -10;
+    if (p.y < -10) p.y = H + 10;
+    if (p.y > H + 10) p.y = -10;
+  }
+
+  // Draw connections first (behind)
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const a = particles[i], b = particles[j];
+      const dx = (a.x + par) - (b.x + par);
+      const dy = (a.y + offY) - (b.y + offY);
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < CONN_DIST) {
+        const alpha = (1 - dist / CONN_DIST) * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(a.x + par, a.y + offY);
+        ctx.lineTo(b.x + par, b.y + offY);
+        ctx.strokeStyle = `rgba(129, 140, 248, ${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Draw particles
+  for (const p of particles) {
+    ctx.beginPath();
+    ctx.arc(p.x + par, p.y + offY, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${p.hue}, 70%, 70%, ${p.alpha})`;
+    ctx.fill();
+    // subtle glow
+    ctx.beginPath();
+    ctx.arc(p.x + par, p.y + offY, p.r * 3, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${p.hue}, 70%, 70%, ${p.alpha * 0.1})`;
+    ctx.fill();
+  }
+}
+
+draw();
+
+// ============================================================
 // CLIENT DATA — empty, no fake leads
 // ============================================================
 
@@ -197,7 +294,6 @@ document.getElementById('clientName').onkeydown = e => { if (e.key === 'Enter') 
 document.getElementById('projectName').onkeydown = e => { if (e.key === 'Enter') document.getElementById('addClientBtn').click(); };
 document.getElementById('msgInput').onkeydown = e => { if (e.key === 'Enter') document.getElementById('broadcastBtn').click(); };
 
-// Scroll reveals
 const ro = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
 const so = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.2 });
