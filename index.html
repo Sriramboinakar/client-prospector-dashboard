@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sriram's Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <div id="bg-canvas"></div>
+  <div class="scene-overlay"></div>
+
+  <div class="grain-overlay"></div>
+
+  <header>
+    <div class="container nav">
+      <div class="logo-wrap">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">SRIRAM</span>
+      </div>
+      <div class="header-right">
+        <span class="live-dot"></span>
+        <span class="live-text">Command Center</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-chip reveal">Client Operations OS</div>
+          <h1 class="hero-title reveal">
+            <span class="line">Full Control.</span>
+            <span class="line accent">Zero Chaos.</span>
+          </h1>
+          <p class="hero-sub reveal">Manage clients, track revenue, automate follow-ups — all from one cockpit.</p>
+        </div>
+        <div class="hero-stats reveal">
+          <div class="stat-card" data-delay="0">
+            <div class="stat-icon stat-clients">👥</div>
+            <div class="stat-body">
+              <span class="stat-num" data-target="0">0</span>
+              <span class="stat-label">Clients</span>
+            </div>
+          </div>
+          <div class="stat-card" data-delay="150">
+            <div class="stat-icon stat-revenue">💰</div>
+            <div class="stat-body">
+              <span class="stat-num" data-target="0">0</span>
+              <span class="stat-label">Revenue</span>
+            </div>
+          </div>
+          <div class="stat-card" data-delay="300">
+            <div class="stat-icon stat-active">⚡</div>
+            <div class="stat-body">
+              <span class="stat-num" data-target="0">0</span>
+              <span class="stat-label">Active</span>
+            </div>
+          </div>
+          <div class="stat-card" data-delay="450">
+            <div class="stat-icon stat-rate">★</div>
+            <div class="stat-body">
+              <span class="stat-num" data-target="0">0</span>
+              <span class="stat-label">Satisfaction</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pipeline-section" id="pipeline">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 class="section-title">Client Pipeline</h2>
+          <p class="section-sub">Drag clients between stages to update status</p>
+        </div>
+        <div class="pipeline reveal">
+          <div class="pipeline-col" data-stage="lead">
+            <div class="col-header">
+              <span class="col-dot lead"></span>
+              <h3>Leads</h3>
+              <span class="col-count" id="leadCount">0</span>
+            </div>
+            <div class="col-body" id="leadContainer"></div>
+          </div>
+          <div class="pipeline-col" data-stage="active">
+            <div class="col-header">
+              <span class="col-dot active"></span>
+              <h3>Active</h3>
+              <span class="col-count" id="activeCount">0</span>
+            </div>
+            <div class="col-body" id="activeContainer"></div>
+          </div>
+          <div class="pipeline-col" data-stage="completed">
+            <div class="col-header">
+              <span class="col-dot completed"></span>
+              <h3>Completed</h3>
+              <span class="col-count" id="completedCount">0</span>
+            </div>
+            <div class="col-body" id="completedContainer"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="activity-section" id="activity">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 class="section-title">Automation Feed</h2>
+          <p class="section-sub">Real-time client communications & system events</p>
+        </div>
+        <div class="activity-panel reveal">
+          <div class="log-container" id="logContainer">
+            <div class="log-entry sys">
+              <span class="log-icon">◆</span>
+              <span class="log-time">0:00</span>
+              <span class="log-agent">System</span>
+              <span class="log-msg">Command Center online</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions-section" id="actions">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 class="section-title">Quick Actions</h2>
+          <p class="section-sub">Add clients or send broadcast messages</p>
+        </div>
+        <div class="actions-grid reveal">
+          <div class="action-card add-client">
+            <h3>+ New Client</h3>
+            <div class="action-form">
+              <div class="form-row">
+                <input type="text" id="clientName" placeholder="Client name" class="f-input">
+                <input type="text" id="projectName" placeholder="Project" class="f-input">
+              </div>
+              <div class="form-row">
+                <select id="stageSelect" class="f-select">
+                  <option value="lead">Lead</option>
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <input type="number" id="clientValue" placeholder="Value ($)" class="f-input" min="0">
+              </div>
+              <button id="addClientBtn" class="f-btn primary">Add Client</button>
+            </div>
+          </div>
+          <div class="action-card broadcast">
+            <h3>📡 Broadcast</h3>
+            <div class="action-form">
+              <input type="text" id="msgInput" placeholder="Message to all clients..." class="f-input full">
+              <button id="broadcastBtn" class="f-btn secondary">Send to All</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo">◈ SRIRAM</span>
+        <span class="footer-tag">Built to bend reality</span>
+        <span class="footer-year">2026</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
