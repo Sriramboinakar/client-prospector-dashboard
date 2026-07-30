@@ -307,30 +307,36 @@ async function searchOSM(niche, location, limit = 20) {
   const nicheLower = niche.toLowerCase().trim();
   let tag = osmTags[nicheLower];
 
-  // Fuzzy match
   if (!tag) {
     for (const [key, val] of Object.entries(osmTags)) {
       if (nicheLower.includes(key) || key.includes(nicheLower)) { tag = val; break; }
     }
   }
-  if (!tag) tag = '["shop"="yes"]'; // fallback
+  if (!tag) tag = '["shop"="yes"]';
 
-  // Escape quotes for Overpass
   const tagClean = tag.replace(/\+"/g, '"');
 
-  // Build area query
-  const q = location.trim();
-  const query = `
-    [out:json][timeout:15];
-    area${q ? `["name"~"${escOsm(q)}"][admin_level~"[468]"]` : '(around:0,0,0)'}->.a;
-    (
-      node${tagClean}(area.a);
-      way${tagClean}(area.a);
-    );
-    out ${limit} center;
-  `;
-
   try {
+    // Step 1: Geocode location via Nominatim
+    const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1&accept-language=en`, {
+      headers: { 'User-Agent': 'ClientProspector/1.0' }
+    });
+    const geoData = await geo.json();
+    if (!geoData || !geoData.length) return [];
+
+    const lat = parseFloat(geoData[0].lat);
+    const lon = parseFloat(geoData[0].lon);
+
+    // Step 2: Query Overpass with around radius (50km)
+    const query = `
+      [out:json][timeout:15];
+      (
+        node${tagClean}(around:50000,${lat},${lon});
+        way${tagClean}(around:50000,${lat},${lon});
+      );
+      out ${limit} center;
+    `;
+
     const res = await fetch(OVERPASS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -342,8 +348,8 @@ async function searchOSM(niche, location, limit = 20) {
     const results = [];
     for (const el of data.elements.slice(0, limit)) {
       const t = el.tags || {};
-      const lat = el.lat || (el.center ? el.center.lat : 0);
-      const lon = el.lon || (el.center ? el.center.lon : 0);
+      const elat = el.lat || (el.center ? el.center.lat : 0);
+      const elon = el.lon || (el.center ? el.center.lon : 0);
       const addr = [t['addr:housenumber'], t['addr:street'], t['addr:city'], t['addr:postcode']].filter(Boolean).join(', ');
       results.push({
         name: t.name || 'Unknown',
@@ -354,61 +360,35 @@ async function searchOSM(niche, location, limit = 20) {
         email: t.email || t['contact:email'] || '',
         category: t.shop || t.amenity || t.office || t.leisure || t.tourism || niche,
         source: 'OpenStreetMap',
-        lat, lon,
+        lat: elat, lon: elon,
       });
     }
     return results;
   } catch { return null; }
 }
 
-function escOsm(s) {
-  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-}
 
-// Demo fallback
 function genDemoResults(niche, location) {
   const demo = [
-    { name: 'Taj Mahal Palace', phone: '+91 22 6665 3366', website: 'https://taj.tajhotels.com', rating: 4.7, reviews: 12453 },
-    { name: 'Bangalore Palace', phone: '+91 80 2670 0107', website: 'https://bangalorepalace.in', rating: 4.3, reviews: 8234 },
-    { name: 'Chaat Street Food', phone: '+91 11 2323 4567', website: 'https://chaatstreet.in', rating: 4.1, reviews: 3452 },
-    { name: 'Urban Climb Gym', phone: '+91 99 8765 4321', website: 'https://urbanclimb.fit', rating: 4.5, reviews: 2156 },
-    { name: 'Golden Harvest Restaurant', phone: '+91 44 2345 6789', website: 'https://goldenharvest.in', rating: 4.2, reviews: 5678 },
-    { name: 'Vogue Fashion Studio', phone: '+91 33 2123 4567', website: 'https://voguestudio.in', rating: 4.0, reviews: 1890 },
-    { name: 'TechPro Solutions', phone: '+91 80 4567 8901', website: 'https://techpro.in', rating: 4.6, reviews: 3120 },
-    { name: 'Green Valley Salon', phone: '+91 22 3456 7890', website: 'https://greenvalleysalon.com', rating: 4.3, reviews: 4567 },
-    { name: 'Heritage Realty', phone: '+91 11 5678 9012', website: 'https://heritagerealty.in', rating: 4.4, reviews: 2345 },
-    { name: 'Bright Future Academy', phone: '+91 20 6789 0123', website: 'https://brightfuture.edu', rating: 4.8, reviews: 1890 },
-    { name: 'City Hospital & Research', phone: '+91 79 7890 1234', website: 'https://cityhospital.in', rating: 4.5, reviews: 6789 },
-    { name: 'Supreme Legal Chambers', phone: '+91 22 8901 2345', website: 'https://supremelegal.in', rating: 4.2, reviews: 1234 },
-    { name: 'Pinnacle Financial Services', phone: '+91 44 9012 3456', website: 'https://pinnaclefin.in', rating: 4.1, reviews: 3456 },
-    { name: 'Lens & Light Photography', phone: '+91 80 0123 4567', website: 'https://lenslight.in', rating: 4.7, reviews: 890 },
-    { name: 'WanderLust Travels', phone: '+91 33 1234 5678', website: 'https://wanderlust.in', rating: 4.3, reviews: 2345 },
-  ];
-  return demo.slice(0, 8 + Math.floor(Math.random() * 4)).map(d => ({ ...d, location: location || 'Mumbai', category: niche, source: 'Demo' }));
-}
-
-// Demo fallback — only used if Places API is not configured
-function genDemoResults(niche, location) {
-  const demo = [
-    { name: 'Taj Mahal Palace', phone: '+91 22 6665 3366', website: 'https://taj.tajhotels.com', rating: 4.7, reviews: 12453 },
-    { name: 'Bangalore Palace', phone: '+91 80 2670 0107', website: 'https://bangalorepalace.in', rating: 4.3, reviews: 8234 },
-    { name: 'Chaat Street Food', phone: '+91 11 2323 4567', website: 'https://chaatstreet.in', rating: 4.1, reviews: 3452 },
-    { name: 'Urban Climb Gym', phone: '+91 99 8765 4321', website: 'https://urbanclimb.fit', rating: 4.5, reviews: 2156 },
-    { name: 'Golden Harvest Restaurant', phone: '+91 44 2345 6789', website: 'https://goldenharvest.in', rating: 4.2, reviews: 5678 },
-    { name: 'Vogue Fashion Studio', phone: '+91 33 2123 4567', website: 'https://voguestudio.in', rating: 4.0, reviews: 1890 },
-    { name: 'TechPro Solutions', phone: '+91 80 4567 8901', website: 'https://techpro.in', rating: 4.6, reviews: 3120 },
-    { name: 'Green Valley Salon', phone: '+91 22 3456 7890', website: 'https://greenvalleysalon.com', rating: 4.3, reviews: 4567 },
-    { name: 'Heritage Realty', phone: '+91 11 5678 9012', website: 'https://heritagerealty.in', rating: 4.4, reviews: 2345 },
-    { name: 'Bright Future Academy', phone: '+91 20 6789 0123', website: 'https://brightfuture.edu', rating: 4.8, reviews: 1890 },
-    { name: 'City Hospital & Research', phone: '+91 79 7890 1234', website: 'https://cityhospital.in', rating: 4.5, reviews: 6789 },
-    { name: 'Supreme Legal Chambers', phone: '+91 22 8901 2345', website: 'https://supremelegal.in', rating: 4.2, reviews: 1234 },
-    { name: 'Pinnacle Financial Services', phone: '+91 44 9012 3456', website: 'https://pinnaclefin.in', rating: 4.1, reviews: 3456 },
-    { name: 'Lens & Light Photography', phone: '+91 80 0123 4567', website: 'https://lenslight.in', rating: 4.7, reviews: 890 },
-    { name: 'WanderLust Travels', phone: '+91 33 1234 5678', website: 'https://wanderlust.in', rating: 4.3, reviews: 2345 },
+    { name: 'Fifth Avenue Fashion', phone: '+1 212-555-0147', website: 'https://fifthavenuefashion.com', rating: 4.5, reviews: 2341 },
+    { name: 'Broadway Styles', phone: '+1 212-555-0234', website: 'https://broadwaystyles.com', rating: 4.2, reviews: 1876 },
+    { name: 'Urban Threads Boutique', phone: '+1 212-555-0345', website: 'https://urbanthreads.nyc', rating: 4.7, reviews: 3120 },
+    { name: 'Madison Avenue Luxe', phone: '+1 212-555-0456', website: 'https://madisonluxe.com', rating: 4.8, reviews: 4567 },
+    { name: 'SoHo Design House', phone: '+1 212-555-0567', website: 'https://sohodesign.nyc', rating: 4.4, reviews: 1234 },
+    { name: 'Brooklyn Denim Co', phone: '+1 718-555-0678', website: 'https://brooklyndenim.co', rating: 4.1, reviews: 2890 },
+    { name: 'Chelsea Fashion Studio', phone: '+1 212-555-0789', website: 'https://chelseafashion.co', rating: 4.6, reviews: 3456 },
+    { name: 'East Village Vintage', phone: '+1 212-555-0890', website: 'https://evvintage.com', rating: 4.3, reviews: 1678 },
+    { name: 'West Side Trends', phone: '+1 212-555-0901', website: 'https://westsidetrends.com', rating: 4.0, reviews: 2345 },
+    { name: 'Garment District Outlet', phone: '+1 212-555-1012', website: 'https://garmentoutlet.nyc', rating: 3.9, reviews: 3456 },
+    { name: 'Tribeca Tailoring', phone: '+1 212-555-1123', website: 'https://tribecatailor.com', rating: 4.9, reviews: 890 },
+    { name: 'Harlem Streetwear', phone: '+1 212-555-1234', website: 'https://harlemstreetwear.com', rating: 4.2, reviews: 2100 },
+    { name: 'NoHo Lifestyle Store', phone: '+1 212-555-1345', website: 'https://nohostyle.com', rating: 4.4, reviews: 1567 },
+    { name: 'Upper East Side Couture', phone: '+1 212-555-1456', website: 'https://uescouture.com', rating: 4.7, reviews: 2890 },
+    { name: 'DUMBO Fashion Lab', phone: '+1 718-555-1567', website: 'https://dumbofashionlab.com', rating: 4.5, reviews: 1234 },
   ];
   return demo.slice(0, 8 + Math.floor(Math.random() * 4)).map(d => ({
     ...d,
-    location: location || 'Mumbai',
+    location: location || 'New York',
     category: niche,
     source: 'Demo',
   }));
