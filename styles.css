@@ -788,6 +788,13 @@ footer {
 .result-card .r-meta .r-email { color: var(--gold); }
 .result-card .r-meta .r-phone { color: var(--green); }
 
+.result-card .r-addr {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 0.35rem;
+  opacity: 0.7;
+}
+
 .result-card .r-add {
   margin-top: 0.7rem;
   padding: 0.4rem 0.8rem;
@@ -944,6 +951,25 @@ footer {
 }
 
 .source-badge.active { background: rgba(52, 211, 153, 0.1); color: var(--green); }
+
+.settings-card.highlight {
+  border-color: rgba(129, 140, 248, 0.25);
+  background: rgba(12, 14, 26, 0.8);
+}
+
+.setup-steps {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  line-height: 1.7;
+  margin-bottom: 0.8rem;
+  padding: 0.6rem 0.7rem;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+}
+
+.setup-steps strong { color: var(--text); }
+.setup-steps a { color: var(--primary); text-decoration: none; }
+.setup-steps a:hover { text-decoration: underline; }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {

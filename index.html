@@ -166,10 +166,13 @@
                 <input type="text" id="searchLocation" placeholder="City, State, Country..." class="s-input">
               </div>
               <div class="search-field search-platform">
-                <label>Source</label>
-                <select id="searchSource" class="s-input s-select">
-                  <option value="google">Google Search</option>
-                  <option value="instagram">Instagram</option>
+                <label>Radius (km)</label>
+                <select id="searchRadius" class="s-input s-select">
+                  <option value="5000">5 km</option>
+                  <option value="10000">10 km</option>
+                  <option value="25000">25 km</option>
+                  <option value="50000" selected>50 km</option>
+                  <option value="100000">100 km</option>
                 </select>
               </div>
               <button id="searchBtn" class="s-btn">
@@ -205,27 +208,30 @@
           </div>
 
           <div class="settings-grid">
-            <div class="settings-card">
-              <h3>🔍 Google Custom Search</h3>
-              <p class="settings-desc">Used to search for businesses by niche + location. Get a free API key from <span class="code">console.cloud.google.com</span></p>
-              <div class="settings-field">
-                <label>API Key</label>
-                <input type="password" id="gApiKey" placeholder="AIza..." class="f-input">
+            <div class="settings-card highlight">
+              <h3>📍 Google Places API</h3>
+              <p class="settings-desc">Returns <strong>real businesses</strong> with phone, address, website & rating by niche + location. Free tier gives you <strong>$200/month credit</strong>.</p>
+              <div class="setup-steps">
+                <p><strong>Setup:</strong></p>
+                <p>1. Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a></p>
+                <p>2. Create a project → Enable <strong>Places API</strong></p>
+                <p>3. Go to Credentials → Create API Key</p>
+                <p>4. Paste it below</p>
               </div>
               <div class="settings-field">
-                <label>Search Engine ID</label>
-                <input type="text" id="gCx" placeholder="your_search_engine_id" class="f-input">
+                <label>Google API Key</label>
+                <input type="password" id="placesApiKey" placeholder="AIzaSy..." class="f-input">
               </div>
-              <button id="saveGoogleSettings" class="f-btn primary">Save</button>
-              <span id="googleStatus" class="settings-status"></span>
+              <button id="savePlacesKey" class="f-btn primary">Save Key</button>
+              <span id="placesStatus" class="settings-status"></span>
             </div>
 
             <div class="settings-card">
-              <h3>🤖 n8n Workflow</h3>
-              <p class="settings-desc">For deeper Instagram scraping + contact enrichment. Deploy the workflow and paste the webhook URL.</p>
+              <h3>🤖 n8n Enrichment</h3>
+              <p class="settings-desc">Optional: connect an n8n workflow to enrich results with Instagram handles & emails.</p>
               <div class="settings-field">
                 <label>Webhook URL</label>
-                <input type="url" id="n8nUrl" placeholder="https://your-n8n.com/webhook/prospect" class="f-input">
+                <input type="url" id="n8nUrl" placeholder="https://your-n8n.com/webhook/enrich" class="f-input">
               </div>
               <button id="saveN8n" class="f-btn primary">Save</button>
               <span id="n8nStatus" class="settings-status"></span>
@@ -234,23 +240,20 @@
                 <div class="workflow-code">
                   <p>1. Open n8n → New Workflow</p>
                   <p>2. Add <strong>Webhook</strong> trigger (POST)</p>
-                  <p>3. Add <strong>HTTP Request</strong> node to call Instagram/Google APIs</p>
-                  <p>4. Add <strong>HTML Extract</strong> or <strong>AI node</strong> to parse contact info</p>
-                  <p>5. Add <strong>Respond to Webhook</strong> node returning JSON array</p>
-                  <p>6. Copy the webhook URL and paste above</p>
-                  <p class="code-block">Expected response format:<br>[{ "name": "...", "instagram": "...", "email": "...", "phone": "..." }]</p>
+                  <p>3. Add <strong>HTTP Request</strong> to search Instagram / scrape bio</p>
+                  <p>4. Add <strong>Respond to Webhook</strong> returning enriched JSON</p>
+                  <p class="code-block">Input: { "name": "...", "website": "..." }<br>Output: { "instagram": "@...", "email": "..." }</p>
                 </div>
               </details>
             </div>
 
             <div class="settings-card">
               <h3>📊 Data Sources</h3>
-              <p class="settings-desc">Your current search sources and their status.</p>
+              <p class="settings-desc">Your current data sources and their status.</p>
               <div class="source-list">
-                <div class="source-item"><span class="source-name">Demo Data</span><span class="source-badge active">Active</span></div>
-                <div class="source-item"><span class="source-name">Google Custom Search</span><span class="source-badge" id="googleBadge">Not configured</span></div>
-                <div class="source-item"><span class="source-name">n8n Workflow</span><span class="source-badge" id="n8nBadge">Not configured</span></div>
-                <div class="source-item"><span class="source-name">Instagram Scraper</span><span class="source-badge" id="instaBadge">Coming soon</span></div>
+                <div class="source-item"><span class="source-name">Google Places API</span><span class="source-badge" id="placesBadge">Not configured</span></div>
+                <div class="source-item"><span class="source-name">Demo Mode</span><span class="source-badge active">Active</span></div>
+                <div class="source-item"><span class="source-name">n8n Enrichment</span><span class="source-badge" id="n8nBadge">Not configured</span></div>
               </div>
             </div>
           </div>
