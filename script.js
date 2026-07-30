@@ -315,46 +315,69 @@ async function searchOSM(niche, location, limit = 20) {
   if (!tag) tag = '["shop"="yes"]';
 
   const tagClean = tag.replace(/\+"/g, '"');
+  const q = location.trim();
 
   try {
-    // Step 1: Geocode location via Nominatim
-    const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1&accept-language=en`, {
-      headers: { 'User-Agent': 'ClientProspector/1.0' }
-    });
-    const geoData = await geo.json();
-    if (!geoData || !geoData.length) return [];
+    // Step 1: Geocode via Photon (CORS-friendly)
+    let lat, lon, bbox;
+    try {
+      const geo = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`);
+      const geoData = await geo.json();
+      if (!geoData.features || !geoData.features.length) {
+        console.warn('Photon: no results for', q);
+        return [];
+      }
+      const coords = geoData.features[0].geometry.coordinates;
+      lon = coords[0];
+      lat = coords[1];
+      bbox = geoData.features[0].properties.extent;
+    } catch (e) {
+      console.error('Photon geocode error:', e);
+      return [];
+    }
 
-    const lat = parseFloat(geoData[0].lat);
-    const lon = parseFloat(geoData[0].lon);
+    // Step 2: Overpass query (use bbox if available, else around radius)
+    let data;
+    try {
+      let locationFilter;
+      if (bbox) {
+        // bbox from Photon: [west, south, east, north]
+        locationFilter = `(${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]})`;
+      } else {
+        locationFilter = `(around:50000,${lat},${lon})`;
+      }
+      const query = `[out:json][timeout:20];(node${tagClean}${locationFilter};way${tagClean}${locationFilter};);out ${limit} center;`;
+      const res = await fetch(OVERPASS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query),
+      });
+      data = await res.json();
+    } catch (e) {
+      console.error('Overpass fetch error:', e);
+      return [];
+    }
 
-    // Step 2: Query Overpass with around radius (50km)
-    const query = `
-      [out:json][timeout:15];
-      (
-        node${tagClean}(around:50000,${lat},${lon});
-        way${tagClean}(around:50000,${lat},${lon});
-      );
-      out ${limit} center;
-    `;
-
-    const res = await fetch(OVERPASS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'data=' + encodeURIComponent(query),
-    });
-    const data = await res.json();
-    if (!data.elements || !data.elements.length) return [];
+    if (!data.elements || !data.elements.length) {
+      console.warn('Overpass: 0 results for', tagClean, 'near', q);
+      return [];
+    }
 
     const results = [];
-    for (const el of data.elements.slice(0, limit)) {
+    for (const el of data.elements) {
       const t = el.tags || {};
-      const elat = el.lat || (el.center ? el.center.lat : 0);
-      const elon = el.lon || (el.center ? el.center.lon : 0);
-      const addr = [t['addr:housenumber'], t['addr:street'], t['addr:city'], t['addr:postcode']].filter(Boolean).join(', ');
+      if (!t.name) continue;
+      const elat = el.lat || (el.center ? el.center.lat : null);
+      const elon = el.lon || (el.center ? el.center.lon : null);
+      const parts = [t['addr:housenumber'], t['addr:street'], t['addr:city'], t['addr:postcode']].filter(Boolean);
+      const state = t['addr:state'] || t['addr:province'] || '';
+      const country = t['addr:country'] || '';
+      if (state && !parts.some(p => p.includes(state))) parts.push(state);
+      if (country && !parts.some(p => p.includes(country))) parts.push(country);
       results.push({
-        name: t.name || 'Unknown',
-        location: addr || location,
-        phone: t.phone || t['contact:phone'] || '',
+        name: t.name,
+        location: parts.join(', ') || q,
+        phone: t.phone || t['contact:phone'] || t['mobile'] || '',
         website: t.website || t['contact:website'] || '',
         instagram: t['contact:instagram'] ? '@' + t['contact:instagram'] : '',
         email: t.email || t['contact:email'] || '',
@@ -362,31 +385,71 @@ async function searchOSM(niche, location, limit = 20) {
         source: 'OpenStreetMap',
         lat: elat, lon: elon,
       });
+      if (results.length >= limit) break;
+    }
+
+    if (!results.length) {
+      console.warn('Overpass: all results had no name');
+      return [];
     }
     return results;
-  } catch { return null; }
+  } catch (e) {
+    console.error('searchOSM unexpected error:', e);
+    return [];
+  }
 }
 
 
-function genDemoResults(niche, location) {
+function genDemoResults(niche, location, min = 20) {
   const demo = [
-    { name: 'Fifth Avenue Fashion', phone: '+1 212-555-0147', website: 'https://fifthavenuefashion.com', rating: 4.5, reviews: 2341 },
-    { name: 'Broadway Styles', phone: '+1 212-555-0234', website: 'https://broadwaystyles.com', rating: 4.2, reviews: 1876 },
-    { name: 'Urban Threads Boutique', phone: '+1 212-555-0345', website: 'https://urbanthreads.nyc', rating: 4.7, reviews: 3120 },
-    { name: 'Madison Avenue Luxe', phone: '+1 212-555-0456', website: 'https://madisonluxe.com', rating: 4.8, reviews: 4567 },
-    { name: 'SoHo Design House', phone: '+1 212-555-0567', website: 'https://sohodesign.nyc', rating: 4.4, reviews: 1234 },
-    { name: 'Brooklyn Denim Co', phone: '+1 718-555-0678', website: 'https://brooklyndenim.co', rating: 4.1, reviews: 2890 },
-    { name: 'Chelsea Fashion Studio', phone: '+1 212-555-0789', website: 'https://chelseafashion.co', rating: 4.6, reviews: 3456 },
-    { name: 'East Village Vintage', phone: '+1 212-555-0890', website: 'https://evvintage.com', rating: 4.3, reviews: 1678 },
-    { name: 'West Side Trends', phone: '+1 212-555-0901', website: 'https://westsidetrends.com', rating: 4.0, reviews: 2345 },
-    { name: 'Garment District Outlet', phone: '+1 212-555-1012', website: 'https://garmentoutlet.nyc', rating: 3.9, reviews: 3456 },
-    { name: 'Tribeca Tailoring', phone: '+1 212-555-1123', website: 'https://tribecatailor.com', rating: 4.9, reviews: 890 },
-    { name: 'Harlem Streetwear', phone: '+1 212-555-1234', website: 'https://harlemstreetwear.com', rating: 4.2, reviews: 2100 },
-    { name: 'NoHo Lifestyle Store', phone: '+1 212-555-1345', website: 'https://nohostyle.com', rating: 4.4, reviews: 1567 },
-    { name: 'Upper East Side Couture', phone: '+1 212-555-1456', website: 'https://uescouture.com', rating: 4.7, reviews: 2890 },
-    { name: 'DUMBO Fashion Lab', phone: '+1 718-555-1567', website: 'https://dumbofashionlab.com', rating: 4.5, reviews: 1234 },
+    { name: 'Fifth Avenue Fashion', phone: '+1 212-555-0147', website: 'https://fifthavenuefashion.com', rating: 4.5 },
+    { name: 'Broadway Styles', phone: '+1 212-555-0234', website: 'https://broadwaystyles.com', rating: 4.2 },
+    { name: 'Urban Threads Boutique', phone: '+1 212-555-0345', website: 'https://urbanthreads.nyc', rating: 4.7 },
+    { name: 'Madison Avenue Luxe', phone: '+1 212-555-0456', website: 'https://madisonluxe.com', rating: 4.8 },
+    { name: 'SoHo Design House', phone: '+1 212-555-0567', website: 'https://sohodesign.nyc', rating: 4.4 },
+    { name: 'Brooklyn Denim Co', phone: '+1 718-555-0678', website: 'https://brooklyndenim.co', rating: 4.1 },
+    { name: 'Chelsea Fashion Studio', phone: '+1 212-555-0789', website: 'https://chelseafashion.co', rating: 4.6 },
+    { name: 'East Village Vintage', phone: '+1 212-555-0890', website: 'https://evvintage.com', rating: 4.3 },
+    { name: 'West Side Trends', phone: '+1 212-555-0901', website: 'https://westsidetrends.com', rating: 4.0 },
+    { name: 'Garment District Outlet', phone: '+1 212-555-1012', website: 'https://garmentoutlet.nyc', rating: 3.9 },
+    { name: 'Tribeca Tailoring', phone: '+1 212-555-1123', website: 'https://tribecatailor.com', rating: 4.9 },
+    { name: 'Harlem Streetwear', phone: '+1 212-555-1234', website: 'https://harlemstreetwear.com', rating: 4.2 },
+    { name: 'NoHo Lifestyle Store', phone: '+1 212-555-1345', website: 'https://nohostyle.com', rating: 4.4 },
+    { name: 'Upper East Side Couture', phone: '+1 212-555-1456', website: 'https://uescouture.com', rating: 4.7 },
+    { name: 'DUMBO Fashion Lab', phone: '+1 718-555-1567', website: 'https://dumbofashionlab.com', rating: 4.5 },
+    { name: 'Park Avenue Bridal', phone: '+1 212-555-1678', website: 'https://parkavebridal.com', rating: 4.6 },
+    { name: 'Bowery Street Co', phone: '+1 212-555-1789', website: 'https://bowery.co', rating: 4.0 },
+    { name: 'Midtown Tailors', phone: '+1 212-555-1890', website: 'https://midtowntailors.com', rating: 4.3 },
+    { name: 'Astoria Fashion', phone: '+1 718-555-1901', website: 'https://astoriafashion.com', rating: 4.1 },
+    { name: 'LES Boutique', phone: '+1 212-555-2012', website: 'https://lesboutique.nyc', rating: 4.4 },
+    { name: 'Flatiron Style Lab', phone: '+1 212-555-2123', website: 'https://flatironstyle.com', rating: 4.8 },
+    { name: 'Greenwich Village Vintage', phone: '+1 212-555-2234', website: 'https://gvvintage.com', rating: 4.5 },
+    { name: 'Murray Hill Apparel', phone: '+1 212-555-2345', website: 'https://murrayhillapparel.com', rating: 4.2 },
+    { name: 'Times Square Fashion', phone: '+1 212-555-2456', website: 'https://timessquarefashion.com', rating: 3.8 },
+    { name: 'Wall Street Suits', phone: '+1 212-555-2567', website: 'https://wallstreetsuits.com', rating: 4.6 },
+    { name: 'Union Square Active', phone: '+1 212-555-2678', website: 'https://unionsquareactive.com', rating: 4.3 },
+    { name: 'Long Island City Denim', phone: '+1 718-555-2789', website: 'https://licdenim.com', rating: 4.1 },
+    { name: 'Hudson Yards Luxury', phone: '+1 212-555-2890', website: 'https://hudsonyardsluxe.com', rating: 4.9 },
+    { name: 'Battery Park Surf', phone: '+1 212-555-2901', website: 'https://batterypark.surf', rating: 4.0 },
+    { name: 'Rockefeller Center Style', phone: '+1 212-555-3012', website: 'https://rockcentstyle.com', rating: 4.4 },
+    { name: 'Chelsea Market Fashion', phone: '+1 212-555-3123', website: 'https://chelseamarketfashion.com', rating: 4.5 },
+    { name: 'Staten Island Apparel', phone: '+1 718-555-3234', website: 'https://statenislandapparel.com', rating: 4.2 },
+    { name: 'Bronx Streetwear Co', phone: '+1 718-555-3345', website: 'https://bronxstreetwear.com', rating: 4.3 },
+    { name: 'Jamaica Fashion Hub', phone: '+1 718-555-3456', website: 'https://jamaicafashion.com', rating: 4.0 },
+    { name: 'Flushing Trends', phone: '+1 718-555-3567', website: 'https://flushingtrends.com', rating: 4.1 },
+    { name: 'Brooklyn Bridge Boutique', phone: '+1 718-555-3678', website: 'https://brooklynbridgeboutique.com', rating: 4.7 },
+    { name: 'World Trade Center Style', phone: '+1 212-555-3789', website: 'https://wtcstyle.com', rating: 4.5 },
+    { name: 'Central Park Activewear', phone: '+1 212-555-3890', website: 'https://centralparkactive.com', rating: 4.4 },
+    { name: 'Grand Central Fashion', phone: '+1 212-555-3901', website: 'https://grandcentralfashion.com', rating: 4.3 },
+    { name: 'Penn Station Styles', phone: '+1 212-555-4012', website: 'https://pennstationstyles.com', rating: 4.1 },
+    { name: 'Morningside Heights Couture', phone: '+1 212-555-4123', website: 'https://morningsidecouture.com', rating: 4.6 },
+    { name: 'Washington Heights Fashion', phone: '+1 212-555-4234', website: 'https://waheightsfashion.com', rating: 4.2 },
+    { name: 'Inwood Boutique', phone: '+1 212-555-4345', website: 'https://inwoodboutique.com', rating: 4.3 },
+    { name: 'Riverdale Style Co', phone: '+1 718-555-4456', website: 'https://riverdalestyle.com', rating: 4.4 },
+    { name: 'City Hall Apparel', phone: '+1 212-555-4567', website: 'https://cityhallapparel.com', rating: 4.0 },
   ];
-  return demo.slice(0, 8 + Math.floor(Math.random() * 4)).map(d => ({
+  const count = Math.max(min, Math.min(demo.length, 8 + Math.floor(Math.random() * 4)));
+  return demo.slice(0, count).map(d => ({
     ...d,
     location: location || 'New York',
     category: niche,
@@ -478,7 +541,7 @@ document.getElementById('searchBtn').onclick = async () => {
   // 3. Fallback to demo if OSM fails
   if (!results || !results.length) {
     await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
-    results = genDemoResults(niche, location);
+    results = genDemoResults(niche, location, limit);
     source = 'Demo';
     log('sys', `Prospector: showing demo — OSM returned no results for "${niche}"`);
   } else {
